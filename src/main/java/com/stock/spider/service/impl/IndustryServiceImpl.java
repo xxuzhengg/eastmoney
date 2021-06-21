@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.stock.spider.service.IndustryService;
 import com.stock.spider.utils.RedisUtil;
 import com.stock.spider.utils.WebUtil;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -13,7 +13,7 @@ import javax.annotation.Resource;
 @Service
 public class IndustryServiceImpl implements IndustryService {
     @Resource
-    ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    TaskExecutor taskExecutor;
 
     @Resource
     WebUtil webUtil;
@@ -29,7 +29,7 @@ public class IndustryServiceImpl implements IndustryService {
         redisUtil.selectDataBase(0);
         for (int i = 0; i < jsonArray.size(); i++) {
             int finalI = i;
-            threadPoolTaskExecutor.execute(() -> {
+            taskExecutor.execute(() -> {
                 String code = JSON.parseObject(jsonArray.get(finalI).toString()).get("f12").toString();
                 String name = JSON.parseObject(jsonArray.get(finalI).toString()).get("f14").toString();
                 redisUtil.setByString(code, name);

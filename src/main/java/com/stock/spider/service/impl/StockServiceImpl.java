@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.stock.spider.service.StockService;
 import com.stock.spider.utils.WebUtil;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -19,16 +19,14 @@ import java.util.concurrent.CountDownLatch;
 @Service
 public class StockServiceImpl implements StockService {
     @Resource
-    ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    TaskExecutor taskExecutor;
 
     @Resource
     WebUtil webUtil;
 
     @Override
-    public void stock() {
-        String[] possibility = new String[]{"BK0729"};
-
-        String stockApi = "http://80.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=500&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b:" + possibility[0] + "+f:!50&fields=f12,f14";
+    public void stock(String industryCode) {
+        String stockApi = "http://80.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=500&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b:" + industryCode + "+f:!50&fields=f12,f14";
         String sizeApi = "http://push2.eastmoney.com/api/qt/stock/get?fltt=2&invt=2&secid=%s.%s&fields=f47,f168";
 
         Map<Double, String> concurrentHashMap = new ConcurrentHashMap<>();
@@ -39,7 +37,7 @@ public class StockServiceImpl implements StockService {
         CountDownLatch countDownLatch = new CountDownLatch(jsonArray.size());
 
         for (Object object : jsonArray) {
-            threadPoolTaskExecutor.execute(() -> {
+            taskExecutor.execute(() -> {
                 String code = JSON.parseObject(object.toString()).get("f12").toString();
                 String name = JSON.parseObject(object.toString()).get("f14").toString();
                 if ((code.startsWith("60") || code.startsWith("00")) && !name.contains("ST")) {//排除退市股、创业板和科创板股票(暂无权限)
@@ -75,6 +73,7 @@ public class StockServiceImpl implements StockService {
         }
 
         //按股票盘子大小顺序输出
+        System.out.println("-----分界线-----");
         Map<Double, String> result = new LinkedHashMap<>();
         concurrentHashMap.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e -> result.put(e.getKey(), e.getValue()));
         result.entrySet().stream().forEach(e -> System.out.println(e.getKey() + "," + e.getValue()));

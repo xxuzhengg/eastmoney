@@ -23,7 +23,6 @@ public class ThreadPoolConfig {
         taskExecutor.setKeepAliveSeconds(60);
         taskExecutor.setThreadNamePrefix("stock-spider-");
         taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
-        taskExecutor.setAwaitTerminationSeconds(60);
         //修改拒绝策略为使用当前线程执行
         taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         //初始化线程池

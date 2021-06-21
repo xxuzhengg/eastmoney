@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.stock.spider.service.IndustryKLineService;
 import com.stock.spider.utils.RedisUtil;
 import com.stock.spider.utils.WebUtil;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Service
 public class IndustryKLineServiceImpl implements IndustryKLineService {
     @Resource
-    ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    TaskExecutor taskExecutor;
 
     @Resource
     WebUtil webUtil;
@@ -44,7 +44,7 @@ public class IndustryKLineServiceImpl implements IndustryKLineService {
         redisUtil.selectDataBase(1);
 
         for (String industryCode : industryList) {
-            threadPoolTaskExecutor.execute(() -> {
+            taskExecutor.execute(() -> {
                 Map<String, String> hashMap = new HashMap<>();
                 String formatApi = String.format(industryKLineApi, industryCode, limit);
                 String web = webUtil.getWeb(formatApi);
