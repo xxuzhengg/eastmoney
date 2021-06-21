@@ -12,4 +12,5 @@
 
 > 爬虫逻辑看代码块的注释吧，入门级的爬虫思路，很简单的
 
-> 程序在master分支，需要先启动redis service
+> 程序在master分支，需要先启动redis-server.exe
+
