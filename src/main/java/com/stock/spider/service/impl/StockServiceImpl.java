@@ -27,7 +27,7 @@ public class StockServiceImpl implements StockService {
     @Override
     public void stock(String industryCode) {
         String stockApi = "http://80.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=500&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b:" + industryCode + "+f:!50&fields=f12,f14";
-        String sizeApi = "http://push2.eastmoney.com/api/qt/stock/get?fltt=2&invt=2&secid=%s.%s&fields=f47,f168";
+        String sizeApi = "http://push2.eastmoney.com/api/qt/stock/get?fltt=2&invt=2&secid=%s.%s&fields=f43,f47,f168";
 
         Map<Double, String> concurrentHashMap = new ConcurrentHashMap<>();
 
@@ -52,15 +52,20 @@ public class StockServiceImpl implements StockService {
                     String formatApi = String.format(sizeApi, type, code);
                     String sizeWeb = webUtil.getWeb(formatApi);
                     JSONObject sizeObject = JSON.parseObject(sizeWeb).getJSONObject("data");
+                    String f43 = sizeObject.get("f43").toString();
                     String f47 = sizeObject.get("f47").toString();
                     String f168 = sizeObject.get("f168").toString();
 
-                    int turnover = Integer.parseInt(f47);//成交量(1手=100股)
-                    double rate = Double.parseDouble(f168);//换手率
-                    double size = turnover * 100 / rate / 100 / 10000;//股票盘子大小(流通股)(单位亿)
-                    Double key = new BigDecimal(size).setScale(2, RoundingMode.HALF_UP).doubleValue();//保留两位小数
+                    double price = Double.parseDouble(f43);//股票价格
+                    if (price > 10) {
+                        value.append(",").append(price);
+                        int turnover = Integer.parseInt(f47);//成交量(1手=100股)
+                        double rate = Double.parseDouble(f168);//换手率
+                        double size = turnover * 100 / rate / 100 / 10000;//股票盘子大小(流通股)(单位亿)
+                        Double key = new BigDecimal(size).setScale(2, RoundingMode.HALF_UP).doubleValue();//保留两位小数
 
-                    concurrentHashMap.put(key, value.toString());
+                        concurrentHashMap.put(key, value.toString());
+                    }
                 }
                 countDownLatch.countDown();
             });
