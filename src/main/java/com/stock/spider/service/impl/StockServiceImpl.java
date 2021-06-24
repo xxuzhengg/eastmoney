@@ -65,16 +65,18 @@ public class StockServiceImpl implements StockService {
                     JSONArray stockArray = JSON.parseObject(stockWeb).getJSONObject("data").getJSONArray("klines");
                     int size = stockArray.size();
                     int limit = size > 40 ? size - 40 : 0;//2个月 1个月20个交易日
+                    int avg = 0;
                     for (int i = size - 1; i >= limit; i--) {
                         String[] split = stockArray.get(i).toString().split(",");
                         String price = split[0];
                         String amount = split[1];
                         sumPrice += Double.parseDouble(price);
                         sumAmount += Double.parseDouble(amount);
+                        avg++;
                     }
 
-                    avgPrice = new BigDecimal(sumPrice / 40.0).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                    avgAmount = new BigDecimal(sumAmount / 40.0 / 1e8).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    avgPrice = new BigDecimal(sumPrice / avg).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    avgAmount = new BigDecimal(sumAmount / avg / 1e8).setScale(2, RoundingMode.HALF_UP).doubleValue();
                     if (avgPrice > 10 && avgAmount > 2) {
                         concurrentHashMap.put(avgAmount, value.toString());
                     }
