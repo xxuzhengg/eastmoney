@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>spider</title>
+    <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css">
+</head>
+<body>
+<div class="layui-tab" style="width: 616px">
+    <ul class="layui-tab-title">
+        <li>获取行业的代码</li>
+        <li>获取行业的月k线</li>
+        <li>获取行业的月涨跌情况</li>
+        <li>获取行业对应的股票信息</li>
+    </ul>
+    <div class="layui-tab-content">
+        <div class="layui-tab-item">
+            <button id="industry" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
+                行业代码
+            </button>
+        </div>
+
+        <div class="layui-tab-item">
+            <button id="industryKLine" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
+                行业k线
+            </button>
+        </div>
+
+        <div class="layui-tab-item">
+            <button id="month" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
+                行业月涨跌
+            </button>
+            <div class="layui-collapse" lay-accordion>
+                <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">六月</h2>
+                    <div class="layui-colla-content layui-show">
+                        <table class="layui-table">
+                            <thead>
+                            <tr>
+                                <th>行业代码</th>
+                                <th>涨的次数</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="industry:${month_6}">
+                                <td th:text="${industry.key}"></td>
+                                <td th:text="${industry.value}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">七月</h2>
+                    <div class="layui-colla-content layui-show">
+                        <table class="layui-table">
+                            <thead>
+                            <tr>
+                                <th>行业代码</th>
+                                <th>涨的次数</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="industry:${month_7}">
+                                <td th:text="${industry.key}"></td>
+                                <td th:text="${industry.value}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="layui-colla-item">
+                    <h2 class="layui-colla-title">六七月</h2>
+                    <div class="layui-colla-content layui-show">
+                        <table class="layui-table">
+                            <thead>
+                            <tr>
+                                <th>行业代码</th>
+                                <th>涨的次数</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="industry:${month_6_7}">
+                                <td th:text="${industry.key}"></td>
+                                <td th:text="${industry.value}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-tab-item">
+            <form class="layui-form">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">行业代码:</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="industryCode" required lay-verify="required" placeholder="请输入行业代码"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                    <button id="stock" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
+                        行业股票信息
+                    </button>
+                </div>
+                <table class="layui-table">
+                    <thead>
+                    <tr>
+                        <th>日均成交额</th>
+                        <th>股票信息</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s:${stock}">
+                        <td th:text="${s.key}"></td>
+                        <td th:text="${s.value}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="//unpkg.com/layui@2.6.8/dist/layui.js"></script>
+<script>
+    layui.use(['layer', 'element'], function () {
+        var layer = layui.layer,
+            element = layui.element;
+
+        $("#industry").click(function () {
+            $.ajax({
+                url: "/spider/industry",
+                success: function (result) {
+                    layer.open({
+                        title: result
+                        , content: '获取行业的代码成功,已保存在redis的db0'
+                    });
+                },
+                error: function (result) {
+                    layer.open({
+                        title: result
+                        , content: '获取行业的代码失败'
+                    });
+                }
+            });
+        });
+
+        $("#industryKLine").click(function () {
+            $.ajax({
+                url: "/spider/industryKLine",
+                success: function (result) {
+                    layer.open({
+                        title: result
+                        , content: '获取行业的月k线成功,已保存在redis的db1'
+                    });
+                },
+                error: function (result) {
+                    layer.open({
+                        title: result
+                        , content: '获取行业的月k线失败'
+                    });
+                }
+            });
+        });
+
+        $("#month").click(function () {
+            var url = "/spider/month";
+            window.location.href = url;
+        });
+
+        $("#stock").click(function () {
+            var url = "/spider/stock/" + $("#industryCode").val();
+            window.location.href = url;
+        });
+    });
+</script>
+</body>
+</html>

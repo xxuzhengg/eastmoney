@@ -31,7 +31,7 @@ public class StockServiceImpl implements StockService {
     private final String end = "20500000";
 
     @Override
-    public void stock(String industryCode) {
+    public Map<Double, String> stock(String industryCode) {
         String stockApi = "http://80.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=500&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b:" + industryCode + "+f:!50&fields=f12,f14";
         String stockKLineApi = "https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&beg=%s&end=%s";
 
@@ -92,10 +92,11 @@ public class StockServiceImpl implements StockService {
         }
 
         //股票最近2个月的平均交易额 顺序输出
-        System.out.println("-----分界线-----");
+        //System.out.println("-----分界线-----");
         Map<Double, String> result = new LinkedHashMap<>();
         concurrentHashMap.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e -> result.put(e.getKey(), e.getValue()));
-        result.entrySet().stream().forEach(e -> System.out.println(e.getKey() + "," + e.getValue()));
+        //result.entrySet().stream().forEach(e -> System.out.println(e.getKey() + "," + e.getValue()));
+        return result;
     }
 }
 

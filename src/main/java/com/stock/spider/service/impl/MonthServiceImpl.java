@@ -14,7 +14,9 @@ public class MonthServiceImpl implements MonthService {
     RedisUtil redisUtil;
 
     @Override
-    public void month() {
+    public List<Map<String, Integer>> month() {
+        List<Map<String, Integer>> result = new ArrayList<>();
+
         redisUtil.selectDataBase(0);
         Map<String, Integer> industryHashMap_6 = new HashMap();
         Set<String> keys_6 = redisUtil.getByString("*");
@@ -53,12 +55,16 @@ public class MonthServiceImpl implements MonthService {
                 .filter(e -> collect.contains(e.getKey()))
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
 
-        System.out.println("---6月份---分割线---");
-        industrySortedMap_6.entrySet().stream().forEach(e -> System.out.println(e.getKey() + "---" + e.getValue()));
-        System.out.println("---7月份---分割线---");
-        industrySortedMap_7.entrySet().stream().forEach(e -> System.out.println(e.getKey() + "---" + e.getValue()));
-        System.out.println("---6,7月份---分割线---");
-        industrySortedMap_6_7.entrySet().stream().forEach(e -> System.out.println(e.getKey() + "---" + e.getValue()));
+//        System.out.println("---6月份---分割线---");
+//        industrySortedMap_6.entrySet().stream().forEach(e -> System.out.println(e.getKey() + "---" + e.getValue()));
+//        System.out.println("---7月份---分割线---");
+//        industrySortedMap_7.entrySet().stream().forEach(e -> System.out.println(e.getKey() + "---" + e.getValue()));
+//        System.out.println("---6,7月份---分割线---");
+//        industrySortedMap_6_7.entrySet().stream().forEach(e -> System.out.println(e.getKey() + "---" + e.getValue()));
+        result.add(industrySortedMap_6);
+        result.add(industrySortedMap_7);
+        result.add(industrySortedMap_6_7);
+        return result;
     }
 }
 
