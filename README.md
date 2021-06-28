@@ -4,7 +4,7 @@
 
 > jdk 11
 
-> springboot 2.5
+> springboot 2.5.x + thymeleaf 3.0.x
 
 ### 说明
 
@@ -12,7 +12,7 @@
 
 > 需要先启动redis-server.exe
 
-### API
+### 接口
 
 **股票k线**
 > https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&end=%s&lmt=%s
@@ -24,7 +24,7 @@ klt: k线类型 (101日线 102周线 103月线 104季线 105半年线 106年线)
 fqt: 复权类型 (0不复权 1前复权 2后复权)
 secid: 股票代码 如 0.002594 (0深股 1沪股)
 end: 20500101
-lmt: limit分页
+lmt: limit
 ```
 
 **行业**
