@@ -16,9 +16,15 @@ public class RedisUtil {
     RedisTemplate<String, Object> redisTemplate;
 
     //string
-    public Set<String> getByString(String key) {
+    public Set<String> getKeysByString(String key) {
         Set<String> keys = redisTemplate.keys(key);
         return keys;
+    }
+
+    //string
+    public String getValueByString(String key) {
+        String value = redisTemplate.opsForValue().get(key).toString();
+        return value;
     }
 
     //string

@@ -61,7 +61,7 @@ public class SpiderController {
 
     @RequestMapping("/month")
     public String month(Model model) {
-        List<Map<String, Integer>> month = monthService.month();
+        List<Map<String, String>> month = monthService.month();
         model.addAttribute("month_6", month.get(0));
         model.addAttribute("month_7", month.get(1));
         model.addAttribute("month_6_7", month.get(2));

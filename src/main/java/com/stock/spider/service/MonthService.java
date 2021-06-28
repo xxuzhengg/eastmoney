@@ -9,5 +9,5 @@ import java.util.Map;
  * 举个例子，比如当前为6月中，那么就统计每年的6月和7月的涨跌情况
  */
 public interface MonthService {
-    List<Map<String, Integer>> month();
+    List<Map<String, String>> month();
 }

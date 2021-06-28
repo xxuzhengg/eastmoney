@@ -37,7 +37,7 @@ public class IndustryKLineServiceImpl implements IndustryKLineService {
 
         redisUtil.selectDataBase(0);
 
-        Set<String> industrySet = redisUtil.getByString("*");
+        Set<String> industrySet = redisUtil.getKeysByString("*");
         //需要注意的是,专用设备BK0910,最早是从2016-07-15开始,暂时不考虑
         List<String> industryList = industrySet.stream().filter(e -> !e.equals("BK0910")).collect(Collectors.toList());
 

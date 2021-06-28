@@ -77,7 +77,7 @@ public class StockServiceImpl implements StockService {
 
                     avgPrice = new BigDecimal(sumPrice / avg).setScale(2, RoundingMode.HALF_UP).doubleValue();
                     avgAmount = new BigDecimal(sumAmount / avg / 1e8).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                    if (avgPrice > 10 && avgAmount > 2) {
+                    if (avgPrice > 10 && avgPrice < 100 && avgAmount > 2) {
                         concurrentHashMap.put(avgAmount, value.toString());
                     }
                 }
@@ -91,11 +91,9 @@ public class StockServiceImpl implements StockService {
             e.printStackTrace();
         }
 
-        //股票最近2个月的平均交易额 顺序输出
-        //System.out.println("-----分界线-----");
         Map<Double, String> result = new LinkedHashMap<>();
         concurrentHashMap.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e -> result.put(e.getKey(), e.getValue()));
-        //result.entrySet().stream().forEach(e -> System.out.println(e.getKey() + "," + e.getValue()));
+
         return result;
     }
 }
