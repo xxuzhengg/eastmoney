@@ -15,7 +15,7 @@
 ### API
 
 **股票k线**
-> https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&beg=%s&end=%s
+> https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&end=%s&lmt=%s
 
 ```
 fields1: f1,f2,f3,f4,f5,f6
@@ -23,8 +23,8 @@ fields2: f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61 (日期,开盘,收盘,最�
 klt: k线类型 (101日线 102周线 103月线 104季线 105半年线 106年线)
 fqt: 复权类型 (0不复权 1前复权 2后复权)
 secid: 股票代码 如 0.002594 (0深股 1沪股)
-beg: 0
-end: 20500000
+end: 20500101
+lmt: limit分页
 ```
 
 **行业**
