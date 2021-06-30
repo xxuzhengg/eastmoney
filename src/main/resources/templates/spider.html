@@ -150,11 +150,11 @@
                 success: function (result) {
                     $.each(result, function (index, obj) {
                         $("#append" + index).empty();
-                        $.each(obj, function (i, o) {
+                        $.each(obj, function (key, value) {
                             $("#append" + index).append(
                                 `<tr>
-                                    <td>` + i + `</td>
-                                    <td>` + o + `</td>
+                                    <td>` + key + `</td>
+                                    <td>` + value + `</td>
                                 </tr>`
                             );
                         });
@@ -178,11 +178,11 @@
                 url: "/spider/stock/" + $("#industryCode").val(),
                 success: function (result) {
                     $("#append").empty();
-                    $.each(result, function (i, o) {
+                    $.each(result, function (key, value) {
                         $("#append").append(
                             `<tr>
-                                <td>` + i + `</td>
-                                <td>` + o + `</td>
+                                <td>` + key + `</td>
+                                <td>` + value + `</td>
                              </tr>`
                         );
                     });
