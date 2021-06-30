@@ -77,7 +77,7 @@ public class StockServiceImpl implements StockService {
 
                     avgPrice = new BigDecimal(sumPrice / avg).setScale(2, RoundingMode.HALF_UP).doubleValue();
                     avgAmount = new BigDecimal(sumAmount / avg / 1e8).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                    if (avgPrice > 10 && avgPrice < 100 && avgAmount > 2) {
+                    if (avgPrice > 10 && avgPrice < 60 && avgAmount > 3) {
                         concurrentHashMap.put(avgAmount, value.toString());
                     }
                 }

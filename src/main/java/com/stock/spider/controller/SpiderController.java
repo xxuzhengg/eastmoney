@@ -5,7 +5,6 @@ import com.stock.spider.service.IndustryService;
 import com.stock.spider.service.MonthService;
 import com.stock.spider.service.StockService;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -60,18 +59,16 @@ public class SpiderController {
     }
 
     @RequestMapping("/month")
-    public String month(Model model) {
+    @ResponseBody
+    public List<Map<String, String>> month() {
         List<Map<String, String>> month = monthService.month();
-        model.addAttribute("month_6", month.get(0));
-        model.addAttribute("month_7", month.get(1));
-        model.addAttribute("month_6_7", month.get(2));
-        return "spider";
+        return month;
     }
 
     @RequestMapping("/stock/{code}")
-    public String stock(Model model, @PathVariable("code") String code) {
+    @ResponseBody
+    public Map<Double, String> stock(@PathVariable("code") String code) {
         Map<Double, String> stock = stockService.stock(code);
-        model.addAttribute("stock", stock);
-        return "spider";
+        return stock;
     }
 }

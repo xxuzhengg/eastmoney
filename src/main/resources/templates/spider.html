@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>spider</title>
@@ -33,7 +33,7 @@
             <div class="layui-collapse" style="margin: 10px" lay-accordion>
                 <div class="layui-colla-item">
                     <h2 class="layui-colla-title">六月</h2>
-                    <div class="layui-colla-content layui-show">
+                    <div class="layui-colla-content">
                         <table class="layui-table">
                             <thead>
                             <tr>
@@ -41,18 +41,13 @@
                                 <th>涨的次数</th>
                             </tr>
                             </thead>
-                            <tbody>
-                            <tr th:each="industry:${month_6}">
-                                <td th:text="${industry.key}"></td>
-                                <td th:text="${industry.value}"></td>
-                            </tr>
-                            </tbody>
+                            <tbody id="append0"></tbody>
                         </table>
                     </div>
                 </div>
                 <div class="layui-colla-item">
                     <h2 class="layui-colla-title">七月</h2>
-                    <div class="layui-colla-content layui-show">
+                    <div class="layui-colla-content">
                         <table class="layui-table">
                             <thead>
                             <tr>
@@ -60,18 +55,13 @@
                                 <th>涨的次数</th>
                             </tr>
                             </thead>
-                            <tbody>
-                            <tr th:each="industry:${month_7}">
-                                <td th:text="${industry.key}"></td>
-                                <td th:text="${industry.value}"></td>
-                            </tr>
-                            </tbody>
+                            <tbody id="append1"></tbody>
                         </table>
                     </div>
                 </div>
                 <div class="layui-colla-item">
                     <h2 class="layui-colla-title">交集</h2>
-                    <div class="layui-colla-content layui-show">
+                    <div class="layui-colla-content">
                         <table class="layui-table">
                             <thead>
                             <tr>
@@ -79,12 +69,7 @@
                                 <th>行业名称</th>
                             </tr>
                             </thead>
-                            <tbody>
-                            <tr th:each="industry:${month_6_7}">
-                                <td th:text="${industry.key}"></td>
-                                <td th:text="${industry.value}"></td>
-                            </tr>
-                            </tbody>
+                            <tbody id="append2"></tbody>
                         </table>
                     </div>
                 </div>
@@ -110,12 +95,7 @@
                         <th>股票信息</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    <tr th:each="s:${stock}">
-                        <td th:text="${s.key}"></td>
-                        <td th:text="${s.value}"></td>
-                    </tr>
-                    </tbody>
+                    <tbody id="append"></tbody>
                 </table>
             </form>
         </div>
@@ -165,13 +145,59 @@
         });
 
         $("#month").click(function () {
-            var url = "/spider/month";
-            window.location.href = url;
+            $.ajax({
+                url: "/spider/month",
+                success: function (result) {
+                    $.each(result, function (index, obj) {
+                        $("#append" + index).empty();
+                        $.each(obj, function (i, o) {
+                            $("#append" + index).append(
+                                `<tr>
+                                    <td>` + i + `</td>
+                                    <td>` + o + `</td>
+                                </tr>`
+                            );
+                        });
+                    });
+                    layer.open({
+                        title: 'success'
+                        , content: '获取行业的月涨跌情况成功'
+                    });
+                },
+                error: function (result) {
+                    layer.open({
+                        title: 'error'
+                        , content: '获取行业的月涨跌情况失败'
+                    });
+                }
+            });
         });
 
         $("#stock").click(function () {
-            var url = "/spider/stock/" + $("#industryCode").val();
-            window.location.href = url;
+            $.ajax({
+                url: "/spider/stock/" + $("#industryCode").val(),
+                success: function (result) {
+                    $("#append").empty();
+                    $.each(result, function (i, o) {
+                        $("#append").append(
+                            `<tr>
+                                <td>` + i + `</td>
+                                <td>` + o + `</td>
+                             </tr>`
+                        );
+                    });
+                    layer.open({
+                        title: 'success'
+                        , content: '获取行业对应的股票信息成功'
+                    });
+                },
+                error: function (result) {
+                    layer.open({
+                        title: 'error'
+                        , content: '获取行业对应的股票信息失败'
+                    });
+                }
+            });
         });
     });
 </script>
