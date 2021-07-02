@@ -31,7 +31,7 @@ public class WebUtil {
                 return null;
             }
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
         return null;

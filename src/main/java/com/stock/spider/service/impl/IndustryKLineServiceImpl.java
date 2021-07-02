@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.stock.spider.service.IndustryKLineService;
 import com.stock.spider.utils.RedisUtil;
 import com.stock.spider.utils.WebUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
@@ -28,9 +29,22 @@ public class IndustryKLineServiceImpl implements IndustryKLineService {
     @Resource
     RedisUtil redisUtil;
 
+    @Value("${industryKLine.fields1}")
+    private String fields1;
+    @Value("${industryKLine.fields2}")
+    private String fields2;
+    @Value("${industryKLine.klt}")
+    private String klt;
+    @Value("${industryKLine.fqt}")
+    private String fqt;
+    @Value("${industryKLine.type}")
+    private String type;
+    @Value("${industryKLine.end}")
+    private String end;
+
     @Override
     public void industryKLine() {
-        String industryKLineApi = "http://14.push2his.eastmoney.com/api/qt/stock/kline/get?secid=90.%s&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f59&klt=103&fqt=1&end=20500101&lmt=%s";
+        String industryKLineApi = "https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&end=%s&lmt=%s";
 
         //从15年股灾后开始算起,2016-02-01
         long limit = LocalDate.parse("2016-02-01").until(LocalDate.now(), ChronoUnit.MONTHS) + 1;
@@ -46,7 +60,7 @@ public class IndustryKLineServiceImpl implements IndustryKLineService {
         for (String industryCode : industryList) {
             taskExecutor.execute(() -> {
                 Map<String, String> hashMap = new HashMap<>();
-                String formatApi = String.format(industryKLineApi, industryCode, limit);
+                String formatApi = String.format(industryKLineApi, fields1, fields2, klt, fqt, type, industryCode, end, limit);
                 String web = webUtil.getWeb(formatApi);
                 JSONArray jsonArray = JSON.parseObject(web).getJSONObject("data").getJSONArray("klines");
                 for (Object object : jsonArray) {

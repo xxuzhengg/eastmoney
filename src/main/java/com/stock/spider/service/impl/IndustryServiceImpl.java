@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.stock.spider.service.IndustryService;
 import com.stock.spider.utils.RedisUtil;
 import com.stock.spider.utils.WebUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
@@ -21,10 +22,22 @@ public class IndustryServiceImpl implements IndustryService {
     @Resource
     RedisUtil redisUtil;
 
+    @Value("${industry.np}")
+    private String np;
+    @Value("${industry.pn}")
+    private String pn;
+    @Value("${industry.pz}")
+    private String pz;
+    @Value("${industry.fs}")
+    private String fs;
+    @Value("${industry.fields}")
+    private String fields;
+
     @Override
     public void industry() {
-        String industryApi = "http://76.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=m:90+t:2+f:!50&fields=f12,f14";
-        String web = webUtil.getWeb(industryApi);
+        String industryApi = "https://push2.eastmoney.com/api/qt/clist/get?np=%s&pn=%s&pz=%s&fs=%s&fields=%s";
+        String formatApi = String.format(industryApi, np, pn, pz, fs, fields);
+        String web = webUtil.getWeb(formatApi);
         JSONArray jsonArray = JSON.parseObject(web).getJSONObject("data").getJSONArray("diff");
         redisUtil.selectDataBase(0);
         for (int i = 0; i < jsonArray.size(); i++) {
