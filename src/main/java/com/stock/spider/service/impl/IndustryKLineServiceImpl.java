@@ -1,7 +1,8 @@
 package com.stock.spider.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stock.spider.service.IndustryKLineService;
 import com.stock.spider.utils.RedisUtil;
 import com.stock.spider.utils.WebUtil;
@@ -28,6 +29,9 @@ public class IndustryKLineServiceImpl implements IndustryKLineService {
 
     @Resource
     RedisUtil redisUtil;
+
+    @Resource
+    ObjectMapper objectMapper;
 
     @Value("${industryKLine.fields1}")
     private String fields1;
@@ -62,20 +66,25 @@ public class IndustryKLineServiceImpl implements IndustryKLineService {
                 Map<String, String> hashMap = new HashMap<>();
                 String formatApi = String.format(industryKLineApi, fields1, fields2, klt, fqt, type, industryCode, end, limit);
                 String web = webUtil.getWeb(formatApi);
-                JSONArray jsonArray = JSON.parseObject(web).getJSONObject("data").getJSONArray("klines");
-                for (Object object : jsonArray) {
-                    String date = object.toString().split(",")[0];
-                    if (date.contains("2021")) break;
+                try {
+                    JsonNode jsonNode = objectMapper.readTree(web);
+                    JsonNode node = jsonNode.get("data").get("klines");
+                    for (JsonNode kline : node) {
+                        String date = kline.asText().split(",")[0];
+                        if (date.contains("2021")) break;
 
-                    StringBuilder key = new StringBuilder();
-                    LocalDate localDate = LocalDate.parse(date);
-                    key.append(localDate.getYear()).append("-").append(localDate.getMonthValue());
+                        StringBuilder key = new StringBuilder();
+                        LocalDate localDate = LocalDate.parse(date);
+                        key.append(localDate.getYear()).append("-").append(localDate.getMonthValue());
 
-                    double quote = Double.parseDouble(object.toString().split(",")[1]);
+                        double quoteChange = Double.parseDouble(kline.asText().split(",")[1]);
 
-                    hashMap.put(key.toString(), String.valueOf(quote));
+                        hashMap.put(key.toString(), String.valueOf(quoteChange));
+                    }
+                    redisUtil.setByHash(industryCode, hashMap);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
                 }
-                redisUtil.setByHash(industryCode, hashMap);
             });
         }
     }

@@ -1,7 +1,8 @@
 package com.stock.spider.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stock.spider.service.IndustryService;
 import com.stock.spider.utils.RedisUtil;
 import com.stock.spider.utils.WebUtil;
@@ -22,6 +23,9 @@ public class IndustryServiceImpl implements IndustryService {
     @Resource
     RedisUtil redisUtil;
 
+    @Resource
+    ObjectMapper objectMapper;
+
     @Value("${industry.np}")
     private String np;
     @Value("${industry.pn}")
@@ -35,18 +39,22 @@ public class IndustryServiceImpl implements IndustryService {
 
     @Override
     public void industry() {
+        redisUtil.selectDataBase(0);
         String industryApi = "https://push2.eastmoney.com/api/qt/clist/get?np=%s&pn=%s&pz=%s&fs=%s&fields=%s";
         String formatApi = String.format(industryApi, np, pn, pz, fs, fields);
         String web = webUtil.getWeb(formatApi);
-        JSONArray jsonArray = JSON.parseObject(web).getJSONObject("data").getJSONArray("diff");
-        redisUtil.selectDataBase(0);
-        for (int i = 0; i < jsonArray.size(); i++) {
-            int finalI = i;
-            taskExecutor.execute(() -> {
-                String code = JSON.parseObject(jsonArray.get(finalI).toString()).get("f12").toString();
-                String name = JSON.parseObject(jsonArray.get(finalI).toString()).get("f14").toString();
-                redisUtil.setByString(code, name);
-            });
+        try {
+            JsonNode jsonNode = objectMapper.readTree(web);
+            JsonNode node = jsonNode.get("data").get("diff");
+            for (JsonNode industry : node) {
+                taskExecutor.execute(() -> {
+                    String code = industry.get("f12").asText();
+                    String name = industry.get("f14").asText();
+                    redisUtil.setByString(code, name);
+                });
+            }
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
     }
 }

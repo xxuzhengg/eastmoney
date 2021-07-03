@@ -1,7 +1,6 @@
 package com.stock.spider.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stock.spider.service.StockService;
@@ -63,15 +62,20 @@ public class StockServiceImpl implements StockService {
 
         String formatStockApi = String.format(stockApi, np, pn, pz, fs, industryCode, fields);
         String web = webUtil.getWeb(formatStockApi);
-        JSONArray jsonArray = JSON.parseObject(web).getJSONObject("data").getJSONArray("diff");
+        JsonNode node = null;
+        try {
+            node = objectMapper.readTree(web).get("data").get("diff");
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
 
-        CountDownLatch countDownLatch = new CountDownLatch(jsonArray.size());
+        CountDownLatch countDownLatch = new CountDownLatch(node.size());
 
-        for (Object object : jsonArray) {
+        for (JsonNode stock : node) {
             taskExecutor.execute(() -> {
                 try {
-                    String code = JSON.parseObject(object.toString()).get("f12").toString();
-                    String name = JSON.parseObject(object.toString()).get("f14").toString();
+                    String code = stock.get("f12").asText();
+                    String name = stock.get("f14").asText();
                     if ((code.startsWith("60") || code.startsWith("00")) && !name.contains("ST")) {//排除退市股、创业板和科创板股票(暂无权限)
                         StringBuilder value = new StringBuilder();
                         value.append(code).append(",").append(name).append(",");
@@ -91,12 +95,12 @@ public class StockServiceImpl implements StockService {
 
                         String formatStockKLineApi = String.format(stockKLineApi, fields1, fields2, klt, fqt, type, code, end, lmt);
                         String stockWeb = webUtil.getWeb(formatStockKLineApi);
-                        JSONArray stockArray = JSON.parseObject(stockWeb).getJSONObject("data").getJSONArray("klines");
-                        int size = stockArray.size();
+                        JsonNode kline = objectMapper.readTree(stockWeb).get("data").get("klines");
+                        int size = kline.size();
                         if (size == 60) {
                             Double sumAmount = 0d;
                             for (int i = 59; i >= 0; i--) {
-                                String amount = stockArray.get(i).toString();
+                                String amount = kline.get(i).asText();
                                 sumAmount += Double.parseDouble(amount);
                             }
                             Double avgAmount = new BigDecimal(sumAmount / 60 / 1e8).setScale(2, RoundingMode.HALF_UP).doubleValue();
