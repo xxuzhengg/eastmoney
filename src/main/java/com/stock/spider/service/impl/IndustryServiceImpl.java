@@ -7,16 +7,12 @@ import com.stock.spider.service.IndustryService;
 import com.stock.spider.utils.RedisUtil;
 import com.stock.spider.utils.WebUtil;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
 @Service
 public class IndustryServiceImpl implements IndustryService {
-    @Resource
-    TaskExecutor taskExecutor;
-
     @Resource
     WebUtil webUtil;
 
@@ -47,11 +43,9 @@ public class IndustryServiceImpl implements IndustryService {
             JsonNode jsonNode = objectMapper.readTree(web);
             JsonNode node = jsonNode.get("data").get("diff");
             for (JsonNode industry : node) {
-                taskExecutor.execute(() -> {
-                    String code = industry.get("f12").asText();
-                    String name = industry.get("f14").asText();
-                    redisUtil.setByString(code, name);
-                });
+                String code = industry.get("f12").asText();
+                String name = industry.get("f14").asText();
+                redisUtil.setByString(code, name);
             }
         } catch (JsonProcessingException e) {
             e.printStackTrace();
