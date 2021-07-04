@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class StockServiceImpl implements StockService {
@@ -58,6 +59,8 @@ public class StockServiceImpl implements StockService {
         String stockKLineApi = "https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&end=%s&lmt=%s";
         String mainForceApi = "https://datainterface3.eastmoney.com/EM_DataCenter_V3/api/GGZLSJTJ/GetGGZLSJTJ?tkn=eastmoney&reportDate=2021-03-31&code=%s.%s&cfg=ggzlsjtj";
 
+        AtomicInteger error = new AtomicInteger(0);
+
         Map<Integer, String> concurrentHashMap = new ConcurrentHashMap<>();
 
         String formatStockApi = String.format(stockApi, np, pn, pz, fs, industryCode, fields);
@@ -87,16 +90,11 @@ public class StockServiceImpl implements StockService {
                             codeType = "sz";
                         }
 
-                        String formatMainForceApi = String.format(mainForceApi, code, codeType);
-                        String mainForceWeb = webUtil.getWeb(formatMainForceApi);
-                        JsonNode jsonNode = objectMapper.readTree(mainForceWeb);
-                        String s = jsonNode.get("Data").get(0).get("Data").get(6).asText();
-                        int mainForce = Integer.parseInt(s.split("\\|")[2]);
-
                         String formatStockKLineApi = String.format(stockKLineApi, fields1, fields2, klt, fqt, type, code, end, lmt);
                         String stockWeb = webUtil.getWeb(formatStockKLineApi);
                         JsonNode kline = objectMapper.readTree(stockWeb).get("data").get("klines");
                         int size = kline.size();
+
                         if (size == 60) {
                             Double sumAmount = 0d;
                             for (int i = 59; i >= 0; i--) {
@@ -104,13 +102,23 @@ public class StockServiceImpl implements StockService {
                                 sumAmount += Double.parseDouble(amount);
                             }
                             Double avgAmount = new BigDecimal(sumAmount / 60 / 1e8).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                            if (avgAmount > 3 && mainForce > 30) {
-                                value.append(avgAmount).append("亿元");
-                                concurrentHashMap.put(mainForce, value.toString());
+
+                            if (avgAmount > 3) {
+                                String formatMainForceApi = String.format(mainForceApi, code, codeType);
+                                String mainForceWeb = webUtil.getWeb(formatMainForceApi);
+                                JsonNode jsonNode = objectMapper.readTree(mainForceWeb);
+                                String s = jsonNode.get("Data").get(0).get("Data").get(6).asText();
+                                int mainForce = Integer.parseInt(s.split("\\|")[2]);
+
+                                if (mainForce > 30) {
+                                    value.append(avgAmount).append("亿元");
+                                    concurrentHashMap.put(mainForce, value.toString());
+                                }
                             }
                         }
                     }
                 } catch (Exception e) {
+                    error.incrementAndGet();
                     e.printStackTrace();
                 } finally {
                     countDownLatch.countDown();
@@ -124,6 +132,9 @@ public class StockServiceImpl implements StockService {
             e.printStackTrace();
         }
 
+        if (error.get() > 0) {
+            concurrentHashMap.put(0, String.valueOf(error.get()));
+        }
         Map<Integer, String> result = new LinkedHashMap<>();
         concurrentHashMap.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e -> result.put(e.getKey(), e.getValue()));
 
