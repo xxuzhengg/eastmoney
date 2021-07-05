@@ -179,9 +179,6 @@
                 success: function (result) {
                     $("#append").empty();
                     $.each(result, function (key, value) {
-                        if (key == 0 && value > 0) {
-
-                        }
                         $("#append").append(
                             `<tr>
                                 <td>` + key + `</td>
