@@ -95,7 +95,7 @@ public class StockServiceImpl implements StockService {
                         String s = jsonNode.get("Data").get(0).get("Data").get(6).asText();
                         int mainForce = Integer.parseInt(s.split("\\|")[2]);
 
-                        if (mainForce >= 60) {
+                        if (mainForce >= 40) {
                             concurrentHashMap.put(mainForce, value.toString());
                         }
                     }

@@ -17,19 +17,19 @@ public class MonthServiceImpl implements MonthService {
     public List<Map<String, String>> month() {
         List<Map<String, String>> result = new ArrayList<>();
 
-        Map<String, String> industrySortedMap_6 = this.month("-6");
-
         Map<String, String> industrySortedMap_7 = this.month("-7");
+
+        Map<String, String> industrySortedMap_8 = this.month("-8");
 
         //求交集
         redisUtil.selectDataBase(0);
-        Map<String, String> intersection = industrySortedMap_6.entrySet().stream()
-                .filter(e -> industrySortedMap_7.entrySet().stream().map(Map.Entry::getKey)
+        Map<String, String> intersection = industrySortedMap_7.entrySet().stream()
+                .filter(e -> industrySortedMap_8.entrySet().stream().map(Map.Entry::getKey)
                         .collect(Collectors.toList()).contains(e.getKey()))
                 .collect(Collectors.toMap(e -> e.getKey(), e -> redisUtil.getValueByString(e.getKey())));
 
-        result.add(industrySortedMap_6);
         result.add(industrySortedMap_7);
+        result.add(industrySortedMap_8);
         result.add(intersection);
 
         return result;
