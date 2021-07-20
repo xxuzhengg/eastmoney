@@ -54,7 +54,7 @@ public class StockServiceImpl implements StockService {
     public Map<Integer, String> stock(String industryCode) {
         String stockApi = "https://push2.eastmoney.com/api/qt/clist/get?np=%s&pn=%s&pz=%s&fs=%s:%s&fields=%s";
         String stockKLineApi = "https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&end=%s&lmt=%s";
-        String mainForceApi = "https://datainterface3.eastmoney.com/EM_DataCenter_V3/api/GGZLSJTJ/GetGGZLSJTJ?tkn=eastmoney&reportDate=2021-03-31&code=%s.%s&cfg=ggzlsjtj";
+        String mainForceApi = "https://datainterface3.eastmoney.com/EM_DataCenter_V3/api/GGZLSJTJ/GetGGZLSJTJ?tkn=eastmoney&reportDate=2021-06-30&code=%s.%s&cfg=ggzlsjtj";
 
         Map<Integer, String> concurrentHashMap = new ConcurrentHashMap<>();
 
@@ -95,7 +95,7 @@ public class StockServiceImpl implements StockService {
                         String s = jsonNode.get("Data").get(0).get("Data").get(6).asText();
                         int mainForce = Integer.parseInt(s.split("\\|")[2]);
 
-                        if (mainForce >= 30) {
+                        if (mainForce >= 20) {
                             concurrentHashMap.put(mainForce, value.toString());
                         }
                     }
