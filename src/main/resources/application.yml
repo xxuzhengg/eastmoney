@@ -35,4 +35,4 @@ stockKLineApi:
   klt: 101
   fqt: 1
   end: 20500101
-  lmt: 60
+  lmt: 40
