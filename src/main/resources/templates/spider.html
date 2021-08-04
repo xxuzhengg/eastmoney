@@ -27,9 +27,23 @@
         </div>
 
         <div class="layui-tab-item">
-            <button id="month" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
-                行业月涨跌
-            </button>
+            <div class="layui-form-item">
+                <label class="layui-form-label">当前月份</label>
+                <div class="layui-input-block">
+                    <input type="text" id="current" placeholder="请输入数字" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">下个月份</label>
+                <div class="layui-input-block">
+                    <input type="text" id="next" placeholder="请输入数字" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <button id="month" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
+                    行业月涨跌
+                </button>
+            </div>
             <div class="layui-collapse" style="margin: 10px" lay-accordion>
                 <div class="layui-colla-item">
                     <h2 class="layui-colla-title">当前月</h2>
@@ -146,7 +160,7 @@
 
         $("#month").click(function () {
             $.ajax({
-                url: "/spider/month",
+                url: "/spider/month/" + $("#current").val() + "/" + $("#next").val(),
                 success: function (result) {
                     $.each(result, function (index, obj) {
                         $("#append" + index).empty();

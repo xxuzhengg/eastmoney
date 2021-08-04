@@ -14,12 +14,12 @@ public class MonthServiceImpl implements MonthService {
     RedisUtil redisUtil;
 
     @Override
-    public List<Map<String, String>> month() {
+    public List<Map<String, String>> month(String current, String next) {
         List<Map<String, String>> result = new ArrayList<>();
 
-        Map<String, String> industrySortedMap_current = this.month("-7");
+        Map<String, String> industrySortedMap_current = this.month("-" + current);
 
-        Map<String, String> industrySortedMap_next = this.month("-8");
+        Map<String, String> industrySortedMap_next = this.month("-" + next);
 
         //求交集
         redisUtil.selectDataBase(0);

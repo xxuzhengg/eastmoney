@@ -58,10 +58,10 @@ public class SpiderController {
         }
     }
 
-    @RequestMapping("/month")
+    @RequestMapping("/month/{current}/{next}")
     @ResponseBody
-    public List<Map<String, String>> month() {
-        List<Map<String, String>> month = monthService.month();
+    public List<Map<String, String>> month(@PathVariable("current") String current, @PathVariable("next") String next) {
+        List<Map<String, String>> month = monthService.month(current, next);
         return month;
     }
 
