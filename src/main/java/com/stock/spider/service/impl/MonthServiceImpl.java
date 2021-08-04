@@ -40,7 +40,7 @@ public class MonthServiceImpl implements MonthService {
         Map<String, String> industryHashMap = new HashMap();
         Set<String> keys = redisUtil.getKeysByString("*");
         redisUtil.selectDataBase(1);
-        keys.stream().filter(e -> !e.equals("BK0910")).forEach(e -> industryHashMap.put(e,
+        keys.stream().forEach(e -> industryHashMap.put(e,
                 String.valueOf(redisUtil.getByHash(e).entrySet().stream()
                         .filter(i -> i.getKey().contains(month))//每年的月份
                         .filter(i -> Double.parseDouble(i.getValue()) > 0)//涨
