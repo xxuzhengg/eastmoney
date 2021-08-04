@@ -55,11 +55,11 @@ public class StockServiceImpl implements StockService {
     private String lmt;
 
     @Override
-    public Map<String, String> stock(String industryCode) {
+    public Map<BigDecimal, String> stock(String industryCode) {
         String stockApi = "https://push2.eastmoney.com/api/qt/clist/get?np=%s&pn=%s&pz=%s&fs=%s:%s&fields=%s";
         String stockKLineApi = "https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&end=%s&lmt=%s";
 
-        Map<String, String> concurrentHashMap = new ConcurrentHashMap<>();
+        Map<BigDecimal, String> concurrentHashMap = new ConcurrentHashMap<>();
 
         String formatStockApi = String.format(stockApi, np, pn, pz, fs, industryCode, fields);
         String web = webUtil.getWeb(formatStockApi);
@@ -98,7 +98,7 @@ public class StockServiceImpl implements StockService {
                             BigDecimal sum = list.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
                             BigDecimal avg = sum.divide(new BigDecimal(kline.size()));
                             BigDecimal _100_million_yuan = avg.divide(new BigDecimal(1_0000_0000)).setScale(2, RoundingMode.HALF_UP);
-                            concurrentHashMap.put(_100_million_yuan + "亿元", value.toString());
+                            concurrentHashMap.put(_100_million_yuan, value.toString());
                         }
                     }
                 } catch (Exception e) {
@@ -115,7 +115,7 @@ public class StockServiceImpl implements StockService {
             e.printStackTrace();
         }
 
-        Map<String, String> result = new LinkedHashMap<>();
+        Map<BigDecimal, String> result = new LinkedHashMap<>();
         concurrentHashMap.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e -> result.put(e.getKey(), e.getValue()));
 
         return result;

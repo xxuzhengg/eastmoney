@@ -67,8 +67,8 @@ public class SpiderController {
 
     @RequestMapping("/stock/{code}")
     @ResponseBody
-    public Map<String, String> stock(@PathVariable("code") String code) {
-        Map<String, String> stock = stockService.stock(code);
+    public Map<BigDecimal, String> stock(@PathVariable("code") String code) {
+        Map<BigDecimal, String> stock = stockService.stock(code);
         return stock;
     }
 }
