@@ -121,11 +121,14 @@ public class ReviewServiceImpl implements ReviewService {
                             }
                         }
 
+                        if (price.compareTo(new BigDecimal(0)) == 0) {//新股/次新股
+                            System.out.println(value.toString());
+                        }
                         BigDecimal percent = nextPrice.subtract(price).divide(price, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));//涨跌幅
 
                         BigDecimal sum = list.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
                         BigDecimal avg = sum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(list.size()), 2, RoundingMode.HALF_UP);
-                        value.append(",").append(avg).append(",亿元");
+                        value.append(",").append(avg).append("亿元");
                         concurrentHashMap.put(percent, value.toString());
                     }
                 } catch (Exception e) {
