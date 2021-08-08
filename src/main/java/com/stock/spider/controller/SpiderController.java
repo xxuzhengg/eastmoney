@@ -1,15 +1,13 @@
 package com.stock.spider.controller;
 
-import com.stock.spider.service.IndustryKLineService;
-import com.stock.spider.service.IndustryService;
-import com.stock.spider.service.MonthService;
-import com.stock.spider.service.StockService;
+import com.stock.spider.service.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -80,12 +78,5 @@ public class SpiderController {
     public Map<BigDecimal, String> review(@PathVariable("date") String date, @PathVariable("industryCode") String industryCode) {
         Map<BigDecimal, String> review = reviewService.review(date, industryCode);
         return review;
-    }
-
-    @RequestMapping("/xzTest")
-    @ResponseBody
-    public Map<BigDecimal, String> stock(@PathVariable("code") String code) {
-        Map<BigDecimal, String> stock = stockService.stock(code);
-        return stock;
     }
 }
