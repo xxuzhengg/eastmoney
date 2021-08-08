@@ -96,8 +96,8 @@ public class StockServiceImpl implements StockService {
                                 list.add(new BigDecimal(jsonNode.asText()));
                             }
                             BigDecimal sum = list.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-                            BigDecimal avg = sum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(list.size()), 2, RoundingMode.HALF_UP);
-                            concurrentHashMap.put(avg, value.toString());
+                            BigDecimal avg = sum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(list.size()), 6, RoundingMode.HALF_UP);
+                            concurrentHashMap.put(avg, value.toString());//精度高点 key才不容易重复
                         }
                     }
                 } catch (Exception e) {
