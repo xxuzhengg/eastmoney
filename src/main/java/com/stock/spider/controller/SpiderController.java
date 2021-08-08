@@ -29,6 +29,9 @@ public class SpiderController {
     @Resource
     StockService stockService;
 
+    @Resource
+    ReviewService reviewService;
+
     @RequestMapping("/index")
     public String index() {
         return "spider";

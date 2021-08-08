@@ -3,7 +3,7 @@ package com.stock.spider.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.stock.spider.service.StockService;
+import com.stock.spider.service.ReviewService;
 import com.stock.spider.utils.WebUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 @Service
-public class StockServiceImpl implements StockService {
+public class ReviewServiceImpl implements ReviewService {
     @Resource
     TaskExecutor taskExecutor;
 
@@ -55,7 +58,7 @@ public class StockServiceImpl implements StockService {
     private String lmt;
 
     @Override
-    public Map<BigDecimal, String> stock(String industryCode) {
+    public Map<BigDecimal, String> review(String date, String industryCode) {
         String stockApi = "https://push2.eastmoney.com/api/qt/clist/get?np=%s&pn=%s&pz=%s&fs=%s:%s&fields=%s";
         String stockKLineApi = "https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&end=%s&lmt=%s";
 
@@ -86,19 +89,44 @@ public class StockServiceImpl implements StockService {
                             type = "0";
                         }
 
-                        String formatStockKLineApi = String.format(stockKLineApi, fields1, fields2, klt, fqt, type, code, end, lmt);
+                        fields2 = "f51,f53,f57";//日期,收盘,成交额
+                        long limit = (LocalDate.parse(date).until(LocalDate.now(), ChronoUnit.DAYS) + 1) + Integer.valueOf(lmt);
+                        String formatStockKLineApi = String.format(stockKLineApi, fields1, fields2, klt, fqt, type, code, end, limit);
                         String stockWeb = webUtil.getWeb(formatStockKLineApi);
                         JsonNode kline = objectMapper.readTree(stockWeb).get("data").get("klines");
 
-                        if (kline.size() == Integer.valueOf(lmt)) {
-                            List<BigDecimal> list = new ArrayList<>();
-                            for (JsonNode jsonNode : kline) {
-                                list.add(new BigDecimal(jsonNode.asText()));
+                        //因为 limit 偏大,所以要精确 list.size() = lmt
+                        int index = 0;
+                        for (int i = 0; i < kline.size(); i++) {
+                            if (kline.get(i).asText().contains(date)) {
+                                index = i - Integer.valueOf(lmt);
+                                break;
                             }
-                            BigDecimal sum = list.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-                            BigDecimal avg = sum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(list.size()), 2, RoundingMode.HALF_UP);
-                            concurrentHashMap.put(avg, value.toString());
                         }
+
+                        BigDecimal price = new BigDecimal(0);
+                        BigDecimal nextPrice = new BigDecimal(0);
+                        String nextDate = LocalDate.parse(date).plusMonths(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        List<BigDecimal> list = new ArrayList<>();
+
+                        for (int i = 0; i < kline.size(); i++) {
+                            String str = kline.get(i).asText();
+                            if (i >= index && LocalDate.parse(str.split(",")[0]).isBefore(LocalDate.parse(date))) {
+                                list.add(new BigDecimal(str.split(",")[2]));
+                            } else if (str.contains(date)) {
+                                price = new BigDecimal(str.split(",")[1]);
+                            } else if (str.contains(nextDate)) {
+                                nextPrice = new BigDecimal(str.split(",")[1]);
+                                break;
+                            }
+                        }
+
+                        BigDecimal percent = nextPrice.subtract(price).divide(price, 2, RoundingMode.HALF_UP).multiply(new BigDecimal(100));//涨跌幅
+
+                        BigDecimal sum = list.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+                        BigDecimal avg = sum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(list.size()), 2, RoundingMode.HALF_UP);
+                        value.append(",").append(avg).append(",亿元");
+                        concurrentHashMap.put(percent, value.toString());
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -120,4 +148,3 @@ public class StockServiceImpl implements StockService {
         return result;
     }
 }
-
