@@ -74,4 +74,18 @@ public class SpiderController {
         Map<BigDecimal, String> stock = stockService.stock(code);
         return stock;
     }
+
+    @RequestMapping("/review/{date}/{industryCode}")
+    @ResponseBody
+    public Map<BigDecimal, String> review(@PathVariable("date") String date, @PathVariable("industryCode") String industryCode) {
+        Map<BigDecimal, String> review = reviewService.review(date, industryCode);
+        return review;
+    }
+
+    @RequestMapping("/xzTest")
+    @ResponseBody
+    public Map<BigDecimal, String> stock(@PathVariable("code") String code) {
+        Map<BigDecimal, String> stock = stockService.stock(code);
+        return stock;
+    }
 }
