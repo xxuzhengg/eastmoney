@@ -13,7 +13,6 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -95,7 +94,7 @@ public class ReviewServiceImpl implements ReviewService {
                         String stockWeb = webUtil.getWeb(formatStockKLineApi);
                         JsonNode kline = objectMapper.readTree(stockWeb).get("data").get("klines");
 
-                        //因为 limit 偏大,所以要精确 list.size() = lmt
+                        //因为交易日、节假日休市 所以 limit 偏大,所以要精确 list.size() = lmt
                         int index = 0;
                         for (int i = 0; i < kline.size(); i++) {
                             if (kline.get(i).asText().contains(date)) {
@@ -106,7 +105,7 @@ public class ReviewServiceImpl implements ReviewService {
 
                         BigDecimal price = new BigDecimal(0);
                         BigDecimal nextPrice = new BigDecimal(0);
-                        String nextDate = LocalDate.parse(date).plusMonths(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        int nextDate = 1;//默认一个月有22个交易日
                         List<BigDecimal> list = new ArrayList<>();
 
                         for (int i = 0; i < kline.size(); i++) {
@@ -115,7 +114,7 @@ public class ReviewServiceImpl implements ReviewService {
                                 list.add(new BigDecimal(str.split(",")[2]));
                             } else if (str.contains(date)) {
                                 price = new BigDecimal(str.split(",")[1]);
-                            } else if (str.contains(nextDate)) {
+                            } else if (LocalDate.parse(str.split(",")[0]).isAfter(LocalDate.parse(date)) && (++nextDate) == 22) {
                                 nextPrice = new BigDecimal(str.split(",")[1]);
                                 break;
                             }
