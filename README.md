@@ -10,7 +10,8 @@
 
 > 数据直接存redis，接着直接输出，没有保存mysql，也没有保存office文档
 
-> 需要先启动redis-server.exe
+> 下载客户端，然后启动redis-server.exe  
+> https://github.com/tporadowski/redis/tags
 
 > 爬虫思路：爬行业种类数 -> 爬各行业k线 -> 爬各行业下对应的股票 -> 爬各股票k线 
 
