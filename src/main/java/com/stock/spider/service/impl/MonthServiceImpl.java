@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class MonthServiceImpl implements MonthService {
@@ -14,28 +13,17 @@ public class MonthServiceImpl implements MonthService {
     RedisUtil redisUtil;
 
     @Override
-    public List<Map<String, String>> month(String current, String next) {
+    public List<Map<String, String>> month(String current) {
         List<Map<String, String>> result = new ArrayList<>();
 
-        Map<String, String> industrySortedMap_current = this.month("-" + current);
-
-        Map<String, String> industrySortedMap_next = this.month("-" + next);
-
-        //求交集
-        redisUtil.selectDataBase(0);
-        Map<String, String> intersection = industrySortedMap_current.entrySet().stream()
-                .filter(e -> industrySortedMap_next.entrySet().stream().map(Map.Entry::getKey)
-                        .collect(Collectors.toList()).contains(e.getKey()))
-                .collect(Collectors.toMap(e -> e.getKey(), e -> redisUtil.getValueByString(e.getKey())));
+        Map<String, String> industrySortedMap_current = this.getMonth("-" + current);
 
         result.add(industrySortedMap_current);
-        result.add(industrySortedMap_next);
-        result.add(intersection);
 
         return result;
     }
 
-    private Map<String, String> month(String month) {
+    private Map<String, String> getMonth(String month) {
         redisUtil.selectDataBase(0);
         Map<String, String> industryHashMap = new HashMap();
         Set<String> keys = redisUtil.getKeysByString("*");

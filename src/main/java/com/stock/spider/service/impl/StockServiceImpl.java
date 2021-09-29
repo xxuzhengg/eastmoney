@@ -78,8 +78,14 @@ public class StockServiceImpl implements StockService {
                     String code = stock.get("f12").asText();
                     String name = stock.get("f14").asText();
                     if ((code.startsWith("60") || code.startsWith("00")) && !name.contains("ST")) {//排除退市股、创业板和科创板股票(暂无权限)
-                        StringBuilder value = new StringBuilder();
-                        value.append(code).append(",").append(name);
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(code).append(",").append(name).append(",").append("https://quote.eastmoney.com/concept/%s" + code + ".html");
+                        String value;
+                        if (code.startsWith("60")) {
+                            value = String.format(sb.toString(), "sh");
+                        } else {
+                            value = String.format(sb.toString(), "sz");
+                        }
 
                         String type = "1";
                         if (code.startsWith("00")) {
@@ -97,7 +103,7 @@ public class StockServiceImpl implements StockService {
                             }
                             BigDecimal sum = list.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
                             BigDecimal avg = sum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(list.size()), 6, RoundingMode.HALF_UP);
-                            concurrentHashMap.put(avg, value.toString());//精度高点 key才不容易重复
+                            concurrentHashMap.put(avg, value);//精度高点 key才不容易重复
                         }
                     }
                 } catch (Exception e) {

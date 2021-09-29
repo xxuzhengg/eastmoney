@@ -1,6 +1,9 @@
 package com.stock.spider.controller;
 
-import com.stock.spider.service.*;
+import com.stock.spider.service.IndustryKLineService;
+import com.stock.spider.service.IndustryService;
+import com.stock.spider.service.MonthService;
+import com.stock.spider.service.StockService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,9 +29,6 @@ public class SpiderController {
 
     @Resource
     StockService stockService;
-
-    @Resource
-    ReviewService reviewService;
 
     @RequestMapping("/index")
     public String index() {
@@ -59,10 +59,10 @@ public class SpiderController {
         }
     }
 
-    @RequestMapping("/month/{current}/{next}")
+    @RequestMapping("/month/{current}")
     @ResponseBody
-    public List<Map<String, String>> month(@PathVariable("current") String current, @PathVariable("next") String next) {
-        List<Map<String, String>> month = monthService.month(current, next);
+    public List<Map<String, String>> month(@PathVariable("current") String current) {
+        List<Map<String, String>> month = monthService.month(current);
         return month;
     }
 
@@ -71,12 +71,5 @@ public class SpiderController {
     public Map<BigDecimal, String> stock(@PathVariable("code") String code) {
         Map<BigDecimal, String> stock = stockService.stock(code);
         return stock;
-    }
-
-    @RequestMapping("/review/{date}/{industryCode}")
-    @ResponseBody
-    public Map<BigDecimal, String> review(@PathVariable("date") String date, @PathVariable("industryCode") String industryCode) {
-        Map<BigDecimal, String> review = reviewService.review(date, industryCode);
-        return review;
     }
 }

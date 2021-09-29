@@ -6,13 +6,12 @@
     <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css">
 </head>
 <body>
-<div class="layui-tab" style="width: 808px">
+<div class="layui-tab" style="width: 616px">
     <ul class="layui-tab-title">
         <li>获取行业的代码</li>
         <li>获取行业的月k线</li>
         <li>获取行业的月涨跌情况</li>
         <li>获取行业对应的股票信息</li>
-        <li>获取过去月份的涨跌情况</li>
     </ul>
     <div class="layui-tab-content">
         <div class="layui-tab-item">
@@ -35,12 +34,6 @@
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">下个月份</label>
-                <div class="layui-input-block">
-                    <input type="text" id="next" placeholder="请输入数字" autocomplete="off" class="layui-input">
-                </div>
-            </div>
-            <div class="layui-form-item">
                 <button id="month" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
                     行业月涨跌
                 </button>
@@ -57,34 +50,6 @@
                             </tr>
                             </thead>
                             <tbody id="append0"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="layui-colla-item">
-                    <h2 class="layui-colla-title">下个月</h2>
-                    <div class="layui-colla-content">
-                        <table class="layui-table">
-                            <thead>
-                            <tr>
-                                <th>行业代码</th>
-                                <th>涨的次数</th>
-                            </tr>
-                            </thead>
-                            <tbody id="append1"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="layui-colla-item">
-                    <h2 class="layui-colla-title">交集</h2>
-                    <div class="layui-colla-content">
-                        <table class="layui-table">
-                            <thead>
-                            <tr>
-                                <th>行业代码</th>
-                                <th>行业名称</th>
-                            </tr>
-                            </thead>
-                            <tbody id="append2"></tbody>
                         </table>
                     </div>
                 </div>
@@ -106,44 +71,14 @@
                 <table class="layui-table">
                     <thead>
                     <tr>
-                        <th>近2个月日均成交额</th>
-                        <th>股票代码,股票名称</th>
+                        <th>编号</th>
+                        <th>近1个月日均成交额</th>
+                        <th>股票代码, 股票名称, 股票涨跌幅</th>
                     </tr>
                     </thead>
                     <tbody id="append"></tbody>
                 </table>
             </form>
-        </div>
-
-        <div class="layui-tab-item">
-            <div class="layui-form-item">
-                <label class="layui-form-label">日期</label>
-                <div class="layui-input-block">
-                    <input type="text" id="reviewDate"
-                           placeholder="请输入标准日期格式.例如2021-07-15(日期必须是交易日),表示从7月15号到下个月(22个交易日)的涨跌情况"
-                           autocomplete="off" class="layui-input">
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">行业</label>
-                <div class="layui-input-block">
-                    <input type="text" id="reviewIndustry" placeholder="请输入行业代码" autocomplete="off" class="layui-input">
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <button id="review" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
-                    过去月涨跌
-                </button>
-            </div>
-            <table class="layui-table">
-                <thead>
-                <tr>
-                    <th>月涨跌幅度</th>
-                    <th>股票代码,股票名称,近2个月日均成交额</th>
-                </tr>
-                </thead>
-                <tbody id="append_"></tbody>
-            </table>
         </div>
     </div>
 </div>
@@ -192,7 +127,7 @@
 
         $("#month").click(function () {
             $.ajax({
-                url: "/spider/month/" + $("#current").val() + "/" + $("#next").val(),
+                url: "/spider/month/" + $("#current").val(),
                 success: function (result) {
                     $.each(result, function (index, obj) {
                         $("#append" + index).empty();
@@ -221,6 +156,7 @@
 
         $("#stock").click(function () {
             let loading;
+            let index = 0;
             $.ajax({
                 url: "/spider/stock/" + $("#industryCode").val(),
                 beforeSend: function () {
@@ -229,10 +165,13 @@
                 success: function (result) {
                     $("#append").empty();
                     $.each(result, function (key, value) {
+                        index++;
+                        let arr = value.split(',');
                         $("#append").append(
                             `<tr>
+                                <td>` + index + `</td>
                                 <td>` + key + `亿元</td>
-                                <td>` + value + `</td>
+                                <td>` + arr[0] + ', ' + arr[1] + ', ' + `<a href=` + arr[2] + ` target="_blank" style="color: red">查看涨跌幅</a></td>
                              </tr>`
                         );
                     });
@@ -247,39 +186,6 @@
                     layer.open({
                         title: result
                         , content: '获取行业对应的股票信息失败'
-                    });
-                }
-            });
-        });
-
-        $("#review").click(function () {
-            let loading;
-            $.ajax({
-                url: "/spider/review/" + $("#reviewDate").val() + "/" + $("#reviewIndustry").val(),
-                beforeSend: function () {
-                    loading = layer.load(1);
-                },
-                success: function (result) {
-                    $("#append_").empty();
-                    $.each(result, function (key, value) {
-                        $("#append_").append(
-                            `<tr>
-                                <td>` + key + `%</td>
-                                <td>` + value + `</td>
-                             </tr>`
-                        );
-                    });
-                    layer.close(loading);
-                    layer.open({
-                        title: 'success'
-                        , content: '获取过去月份的涨跌情况成功'
-                    });
-                },
-                error: function (result) {
-                    layer.close(loading);
-                    layer.open({
-                        title: result
-                        , content: '获取过去月份的涨跌情况失败'
                     });
                 }
             });
