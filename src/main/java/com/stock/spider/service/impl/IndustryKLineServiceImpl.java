@@ -14,10 +14,8 @@ import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class IndustryKLineServiceImpl implements IndustryKLineService {
@@ -69,7 +67,12 @@ public class IndustryKLineServiceImpl implements IndustryKLineService {
                     JsonNode node = jsonNode.get("data").get("klines");
                     for (JsonNode kline : node) {
                         String date = kline.asText().split(",")[0];
-                        if (date.contains("2021")) break;
+                        if (date.contains("2021")) {
+                            if (hashMap.size() == 0) {
+                                System.out.println("new industry, code is: " + industryCode);
+                            }
+                            break;
+                        }
 
                         StringBuilder key = new StringBuilder();
                         LocalDate localDate = LocalDate.parse(date);
