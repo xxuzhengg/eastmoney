@@ -1,9 +1,6 @@
 package com.stock.spider.controller;
 
-import com.stock.spider.service.IndustryKLineService;
-import com.stock.spider.service.IndustryService;
-import com.stock.spider.service.MonthService;
-import com.stock.spider.service.StockService;
+import com.stock.spider.service.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +26,9 @@ public class SpiderController {
 
     @Resource
     StockService stockService;
+
+    @Resource
+    StockCollectionsService stockCollectionsService;
 
     @RequestMapping("/index")
     public String index() {
@@ -71,5 +71,12 @@ public class SpiderController {
     public Map<BigDecimal, String> stock(@PathVariable("code") String code) {
         Map<BigDecimal, String> stock = stockService.stock(code);
         return stock;
+    }
+
+    @RequestMapping("/stock/collections")
+    @ResponseBody
+    public Map<BigDecimal, String> collections() {
+        Map<BigDecimal, String> collections = stockCollectionsService.stockCollections();
+        return collections;
     }
 }

@@ -6,12 +6,13 @@
     <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css">
 </head>
 <body>
-<div class="layui-tab" style="width: 616px">
+<div class="layui-tab" style="width: 848px">
     <ul class="layui-tab-title">
         <li>获取行业的代码</li>
         <li>获取行业的月k线</li>
         <li>获取行业的月涨跌情况</li>
         <li>获取行业对应的股票信息</li>
+        <li>获取行业对应的股票集合(3个月)</li>
     </ul>
     <div class="layui-tab-content">
         <div class="layui-tab-item">
@@ -77,6 +78,26 @@
                     </tr>
                     </thead>
                     <tbody id="append"></tbody>
+                </table>
+            </form>
+        </div>
+
+        <div class="layui-tab-item">
+            <form class="layui-form">
+                <div class="layui-form-item">
+                    <button id="collections" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
+                        行业股票集合
+                    </button>
+                </div>
+                <table class="layui-table">
+                    <thead>
+                    <tr>
+                        <th>编号</th>
+                        <th>近1个月日均成交额</th>
+                        <th>股票代码, 股票名称, 股票涨跌幅</th>
+                    </tr>
+                    </thead>
+                    <tbody id="append_"></tbody>
                 </table>
             </form>
         </div>
@@ -186,6 +207,43 @@
                     layer.open({
                         title: result
                         , content: '获取行业对应的股票信息失败'
+                    });
+                }
+            });
+        });
+
+        $("#collections").click(function () {
+            let loading;
+            let index = 0;
+            $.ajax({
+                url: "/spider/stock/collections",
+                beforeSend: function () {
+                    loading = layer.load(1);
+                },
+                success: function (result) {
+                    $("#append_").empty();
+                    $.each(result, function (key, value) {
+                        index++;
+                        let arr = value.split(',');
+                        $("#append_").append(
+                            `<tr>
+                                <td>` + index + `</td>
+                                <td>` + key + `亿元</td>
+                                <td>` + arr[0] + ', ' + arr[1] + ', ' + `<a href=` + arr[2] + ` target="_blank" style="color: red">查看涨跌幅</a></td>
+                             </tr>`
+                        );
+                    });
+                    layer.close(loading);
+                    layer.open({
+                        title: 'success'
+                        , content: '获取行业对应的股票集合成功'
+                    });
+                },
+                error: function (result) {
+                    layer.close(loading);
+                    layer.open({
+                        title: result
+                        , content: '获取行业对应的股票集合失败'
                     });
                 }
             });
