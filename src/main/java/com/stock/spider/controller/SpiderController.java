@@ -73,10 +73,10 @@ public class SpiderController {
         return stock;
     }
 
-    @RequestMapping("/stock/collections")
+    @RequestMapping("/stock/collections/{type}")
     @ResponseBody
-    public Map<BigDecimal, String> collections() {
-        Map<BigDecimal, String> collections = stockCollectionsService.stockCollections();
+    public Map<BigDecimal, String> collections(@PathVariable("type") String type) {
+        Map<BigDecimal, String> collections = stockCollectionsService.stockCollections(type);
         return collections;
     }
 }

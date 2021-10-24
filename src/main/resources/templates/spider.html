@@ -88,6 +88,10 @@
                     <button id="collections" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
                         行业股票集合
                     </button>
+                    <div>
+                        <input type="radio" name="type" value="top10" title="前10%" lay-filter="collections">
+                        <input type="radio" name="type" value="billion" title="10亿" lay-filter="collections" checked>
+                    </div>
                 </div>
                 <table class="layui-table">
                     <thead>
@@ -106,9 +110,10 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="//unpkg.com/layui@2.6.8/dist/layui.js"></script>
 <script>
-    layui.use(['layer', 'element'], function () {
+    layui.use(['layer', 'element', 'form'], function () {
         var layer = layui.layer,
-            element = layui.element;
+            element = layui.element,
+            form = layui.form;
 
         $("#industry").click(function () {
             $.ajax({
@@ -212,11 +217,16 @@
             });
         });
 
+        let type;
+        form.on('radio(collections)', function(data){
+            type = data.value;
+        });
+
         $("#collections").click(function () {
             let loading;
             let index = 0;
             $.ajax({
-                url: "/spider/stock/collections",
+                url: "/spider/stock/collections/" + type,
                 beforeSend: function () {
                     loading = layer.load(1);
                 },

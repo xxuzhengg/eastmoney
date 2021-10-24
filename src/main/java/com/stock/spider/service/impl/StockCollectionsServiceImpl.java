@@ -21,7 +21,7 @@ public class StockCollectionsServiceImpl implements StockCollectionsService {
     StockService stockService;
 
     @Override
-    public Map<BigDecimal, String> stockCollections() {
+    public Map<BigDecimal, String> stockCollections(String type) {
         int curr = LocalDate.now().getMonthValue();
         int next = LocalDate.now().plusMonths(1).getMonthValue();
         int pre = LocalDate.now().minusMonths(1).getMonthValue();
@@ -47,14 +47,43 @@ public class StockCollectionsServiceImpl implements StockCollectionsService {
             System.out.println("无重复");
         }
 
+        Map<BigDecimal, String> result;
+
+        long start = System.currentTimeMillis();
+        if ("top10".equals(type)) {
+            result = this.top10Map(allList);
+        } else {
+            result = this.billionMap(allList);
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("耗时: " + (end - start) / 1000 + "秒");
+
+        return result;
+    }
+
+    //成交额不小于十亿的
+    private Map<BigDecimal, String> billionMap(List<String> allIndustryCodeList) {
         Map<BigDecimal, String> resultMap = new TreeMap<>();
         BigDecimal billion = new BigDecimal(10);
-        allList.stream().forEach(e -> {
+        allIndustryCodeList.stream().forEach(e -> {
             Map<BigDecimal, String> stockMap = stockService.stock(e);
             stockMap.entrySet().removeIf(i -> i.getKey().compareTo(billion) == -1);//去掉小于10亿的
             resultMap.putAll(stockMap);
         });
+        return resultMap;
+    }
 
+    //各行业中取前10%
+    private Map<BigDecimal, String> top10Map(List<String> allIndustryCodeList) {
+        Map<BigDecimal, String> resultMap = new TreeMap<>();
+        allIndustryCodeList.stream().forEach(e -> {
+            Map<BigDecimal, String> stockMap = stockService.stock(e);
+            Map<BigDecimal, String> collect = stockMap.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey(Comparator.reverseOrder()))
+                    .limit(stockMap.size() / 10 + 1)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            resultMap.putAll(collect);
+        });
         return resultMap;
     }
 }
