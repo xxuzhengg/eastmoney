@@ -92,7 +92,7 @@ public class StockCollectionsServiceImpl implements StockCollectionsService {
     //合并上述两种情况
     private Map<BigDecimal, String> billionAndTop10Map(Map<BigDecimal, String> billionMap,
                                                        Map<BigDecimal, String> top10Map) {
-        Map<BigDecimal, String> allMap = new HashMap<>();
+        Map<BigDecimal, String> allMap = new TreeMap<>();
         allMap.putAll(billionMap);
         allMap.putAll(top10Map);
         return allMap;
