@@ -52,8 +52,10 @@ public class StockCollectionsServiceImpl implements StockCollectionsService {
         long start = System.currentTimeMillis();
         if ("top10".equals(type)) {
             result = this.top10Map(allList);
-        } else {
+        } else if ("billion".equals(type)) {
             result = this.billionMap(allList);
+        } else {
+            result = this.billionAndTop10Map(this.billionMap(allList), this.top10Map(allList));
         }
         long end = System.currentTimeMillis();
         System.out.println("耗时: " + (end - start) / 1000 + "秒");
@@ -85,5 +87,14 @@ public class StockCollectionsServiceImpl implements StockCollectionsService {
             resultMap.putAll(collect);
         });
         return resultMap;
+    }
+
+    //合并上述两种情况
+    private Map<BigDecimal, String> billionAndTop10Map(Map<BigDecimal, String> billionMap,
+                                                       Map<BigDecimal, String> top10Map) {
+        Map<BigDecimal, String> allMap = new HashMap<>();
+        allMap.putAll(billionMap);
+        allMap.putAll(top10Map);
+        return allMap;
     }
 }
