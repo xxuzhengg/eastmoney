@@ -16,7 +16,7 @@ public class MonthServiceImpl implements MonthService {
     public List<Map<String, String>> month(String current) {
         List<Map<String, String>> result = new ArrayList<>();
 
-        Map<String, String> industrySortedMap_current = this.getMonth("-" + current);
+        Map<String, String> industrySortedMap_current = this.getMonth(current);
 
         result.add(industrySortedMap_current);
 
@@ -30,7 +30,7 @@ public class MonthServiceImpl implements MonthService {
         redisUtil.selectDataBase(1);
         keys.stream().forEach(e -> industryHashMap.put(e,
                 String.valueOf(redisUtil.getByHash(e).entrySet().stream()
-                        .filter(i -> i.getKey().contains(month))//每年的月份
+                        .filter(i -> i.getKey().split("-")[1].equals(month))//每年的月份
                         .filter(i -> Double.parseDouble(i.getValue()) > 0)//涨
                         .count())));//涨的次数
 

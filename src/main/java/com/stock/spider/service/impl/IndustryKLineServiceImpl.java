@@ -51,6 +51,8 @@ public class IndustryKLineServiceImpl implements IndustryKLineService {
         //从15年股灾后开始算起,2016-02-01
         long limit = LocalDate.parse("2016-02-01").until(LocalDate.now(), ChronoUnit.MONTHS) + 1;
 
+        int currentYear = LocalDate.now().getYear();
+
         redisUtil.selectDataBase(0);
 
         Set<String> industrySet = redisUtil.getKeysByString("*");
@@ -67,7 +69,7 @@ public class IndustryKLineServiceImpl implements IndustryKLineService {
                     JsonNode node = jsonNode.get("data").get("klines");
                     for (JsonNode kline : node) {
                         String date = kline.asText().split(",")[0];
-                        if (date.contains("2021")) {
+                        if (date.contains(String.valueOf(currentYear))) {
                             if (hashMap.size() == 0) {
                                 System.out.println("new industry, code is: " + industryCode);
                             }

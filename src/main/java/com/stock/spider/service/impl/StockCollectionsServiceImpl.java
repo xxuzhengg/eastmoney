@@ -42,10 +42,6 @@ public class StockCollectionsServiceImpl implements StockCollectionsService {
 
         List<String> allList = new ArrayList<>();
         allSet.stream().forEach(e -> allList.addAll(e.entrySet().stream().map(Map.Entry::getKey).collect(Collectors.toList())));
-        System.out.println("industry code has: " + allList);
-        if (allList.stream().distinct().collect(Collectors.toList()).size() == allList.size()) {
-            System.out.println("无重复");
-        }
 
         Map<BigDecimal, String> result;
 
