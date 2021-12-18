@@ -71,7 +71,7 @@ public class IndustryKLineServiceImpl implements IndustryKLineService {
                         String date = kline.asText().split(",")[0];
                         if (date.contains(String.valueOf(currentYear))) {
                             if (hashMap.size() == 0) {
-                                System.out.println("new industry, code is: " + industryCode);
+                                System.out.println("this year, new industry, code is: " + industryCode);
                             }
                             break;
                         }
