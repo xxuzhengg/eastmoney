@@ -25,20 +25,20 @@ public class MonthServiceImpl implements MonthService {
 
     private Map<String, String> getMonth(String month) {
         redisUtil.selectDataBase(0);
-        Map<String, String> industryHashMap = new HashMap();
+        Map<String, Long> industryHashMap = new HashMap();
         Set<String> keys = redisUtil.getKeysByString("*");
         redisUtil.selectDataBase(1);
         keys.stream().forEach(e -> industryHashMap.put(e,
-                String.valueOf(redisUtil.getByHash(e).entrySet().stream()
-                        .filter(i -> i.getKey().split("-")[1].equals(month))//每年的月份
+                redisUtil.getByHash(e).entrySet().stream()
+                        .filter(i -> i.getKey().split("-")[1].equals(month))//每年的月份 月份没有前导0
                         .filter(i -> Double.parseDouble(i.getValue()) > 0)//涨
-                        .count())));//涨的次数
+                        .count()));//涨的次数 从2016-2开始算起 截至2021-1最多4次,2021-2最多5次
 
         Map<String, String> industrySortedMap = new LinkedHashMap<>();
+        Long maxValue = industryHashMap.entrySet().stream().max(Map.Entry.comparingByValue()).get().getValue();
         industryHashMap.entrySet().stream()
-                .sorted(Map.Entry.<String, String>comparingByValue().reversed())
-                .filter(e -> Integer.valueOf(e.getValue()) >= 4)//2016-2020共5年
-                .forEach(e -> industrySortedMap.put(e.getKey(), e.getValue()));
+                .filter(e -> e.getValue().equals(maxValue))
+                .forEach(e -> industrySortedMap.put(e.getKey(), String.valueOf(e.getValue())));
 
         return industrySortedMap;
     }
