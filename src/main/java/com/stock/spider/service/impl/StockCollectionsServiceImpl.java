@@ -35,7 +35,7 @@ public class StockCollectionsServiceImpl implements StockCollectionsService {
         List<Map<String, String>> preMonthList = monthService.month(String.valueOf(pre));
         Set<Map<String, String>> preMonthSet = preMonthList.stream().collect(Collectors.toSet());
 
-        Set<Map<String, String>> allSet = new HashSet<>();
+        Set<Map<String, String>> allSet = new HashSet<>();//去重
         allSet.addAll(currentMonthSet);
         allSet.addAll(nextMonthSet);
         allSet.addAll(preMonthSet);
