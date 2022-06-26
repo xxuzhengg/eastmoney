@@ -79,7 +79,11 @@ public class StockServiceImpl implements StockService {
                     String name = stock.get("f14").asText();
                     if ((code.startsWith("60") || code.startsWith("00")) && !name.contains("ST")) {//排除退市股、创业板和科创板股票(暂无权限)
                         StringBuilder sb = new StringBuilder();
-                        sb.append(code).append(",").append(name).append(",").append("https://quote.eastmoney.com/concept/%s" + code + ".html");
+                        sb
+                                .append(code).append(",")
+                                .append(name).append(",")
+                                .append("https://quote.eastmoney.com/concept/%s" + code + ".html").append(",")
+                                .append("https://www.iwencai.com/unifiedwap/result?w=" + code + "收盘获利");
                         String value;
                         if (code.startsWith("60")) {
                             value = String.format(sb.toString(), "sh");
