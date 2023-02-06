@@ -2,13 +2,13 @@
 
 ### 环境
 
-> jdk 11
+> jdk 17
 
 > springboot 2.5.x + thymeleaf 3.0.x
 
 ### 说明
 
-> 数据直接存redis，接着直接输出，没有保存mysql，也没有保存office文档
+> 数据直接存redis，也只存redis
 
 > 下载客户端，然后启动redis-server.exe  
 > https://github.com/tporadowski/redis/tags
@@ -46,7 +46,7 @@ lmt: 965 (limit)
 ```
 np: 1 (jsonArray格式)
 pn: 1 (offset)
-pz: 行业100 股票500 (limit)
+pz: 965 (limit)
 fs: 股票/行业代码 如股票 b:BK0477 (b:是固定值) 如行业 m:90+t:2 (固定值)
 fields: f12,f14 (代码,名称)
 ```
