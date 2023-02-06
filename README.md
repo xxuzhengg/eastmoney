@@ -17,11 +17,11 @@
 
 ### 接口
 
-* 股票k线
+* 某一股票k线
 
 > https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&end=%s&lmt=%s
 
-* 行业k线
+* 某一行业k线
 
 > https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&end=%s&lmt=%s
 
@@ -35,11 +35,11 @@ end: 20500101 (非固定值 可以更大或者再小一点 也不知道干啥的
 lmt: 965 (limit)
 ```
 
-* 行业
+* 行业列表
 
 > https://push2.eastmoney.com/api/qt/clist/get?np=%s&pn=%s&pz=%s&fs=%s&fields=%s
 
-* 股票
+* 某一行业下的股票列表
 
 > https://push2.eastmoney.com/api/qt/clist/get?np=%s&pn=%s&pz=%s&fs=%s&fields=%s
 
@@ -47,6 +47,6 @@ lmt: 965 (limit)
 np: 1 (jsonArray格式)
 pn: 1 (offset)
 pz: 行业100 股票500 (limit)
-fs: 行业代码 m:90+t:2 股票代码 b:BK0477
+fs: 股票/行业代码 如股票 b:BK0477 (b:是固定值) 如行业 m:90+t:2 (固定值)
 fields: f12,f14 (代码,名称)
 ```
