@@ -6,55 +6,32 @@
     <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css">
 </head>
 <body>
-<div class="layui-tab" style="width: 848px">
+<div class="layui-tab" style="width: 50%">
     <ul class="layui-tab-title">
-        <li>获取行业的代码</li>
-        <li>获取行业的月k线</li>
-        <li>获取行业的月涨跌情况</li>
-        <li>获取行业对应的股票信息</li>
-        <li>获取行业对应的股票集合(3个月)</li>
+        <li>获取行业信息(最近半年)</li>
+        <li>获取行业对应的股票信息(最近一个月)</li>
     </ul>
     <div class="layui-tab-content">
         <div class="layui-tab-item">
-            <button id="industry" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
-                行业代码
-            </button>
-        </div>
-
-        <div class="layui-tab-item">
-            <button id="industryKLine" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
-                行业k线
-            </button>
-        </div>
-
-        <div class="layui-tab-item">
-            <div class="layui-form-item">
-                <label class="layui-form-label">当前月份</label>
-                <div class="layui-input-block">
-                    <input type="text" id="current" placeholder="请输入数字" autocomplete="off" class="layui-input">
+            <form class="layui-form">
+                <div class="layui-form-item">
+                    <button id="industry" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
+                        点击获取行业信息
+                    </button>
                 </div>
-            </div>
-            <div class="layui-form-item">
-                <button id="month" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
-                    行业月涨跌
-                </button>
-            </div>
-            <div class="layui-collapse" style="margin: 10px" lay-accordion>
-                <div class="layui-colla-item">
-                    <h2 class="layui-colla-title">当前月</h2>
-                    <div class="layui-colla-content">
-                        <table class="layui-table">
-                            <thead>
-                            <tr>
-                                <th>行业代码</th>
-                                <th>涨的次数</th>
-                            </tr>
-                            </thead>
-                            <tbody id="append0"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+                <table class="layui-table">
+                    <thead>
+                    <tr>
+                        <th>编号</th>
+                        <th>行业代码</th>
+                        <th>行业名称</th>
+                        <th>涨幅(当天值与最低值)</th>
+                        <th>k线图</th>
+                    </tr>
+                    </thead>
+                    <tbody id="append_industry"></tbody>
+                </table>
+            </form>
         </div>
 
         <div class="layui-tab-item">
@@ -66,43 +43,22 @@
                                autocomplete="off" class="layui-input">
                     </div>
                     <button id="stock" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
-                        行业股票信息
+                        点击获取股票信息
                     </button>
                 </div>
                 <table class="layui-table">
                     <thead>
                     <tr>
                         <th>编号</th>
-                        <th>近1个月日均成交额</th>
-                        <th>股票代码, 股票名称, 股票涨跌幅</th>
+                        <th>股票代码</th>
+                        <th>股票名称</th>
+                        <th>日均成交量(万)</th>
+                        <th>日均成交额(亿)</th>
+                        <th>k线图</th>
+                        <th>获利盘</th>
                     </tr>
                     </thead>
-                    <tbody id="append"></tbody>
-                </table>
-            </form>
-        </div>
-
-        <div class="layui-tab-item">
-            <form class="layui-form">
-                <div class="layui-form-item">
-                    <button id="collections" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
-                        行业股票集合
-                    </button>
-                    <div>
-                        <input type="radio" name="type" value="top10" title="前10%" lay-filter="collections">
-                        <input type="radio" name="type" value="billion" title="10亿" lay-filter="collections">
-                        <input type="radio" name="type" value="all" title="全都要" lay-filter="collections">
-                    </div>
-                </div>
-                <table class="layui-table">
-                    <thead>
-                    <tr>
-                        <th>编号</th>
-                        <th>近1个月日均成交额</th>
-                        <th>股票代码, 股票名称, 股票涨跌幅</th>
-                    </tr>
-                    </thead>
-                    <tbody id="append_"></tbody>
+                    <tbody id="append_stock"></tbody>
                 </table>
             </form>
         </div>
@@ -112,70 +68,42 @@
 <script src="//unpkg.com/layui@2.6.8/dist/layui.js"></script>
 <script>
     layui.use(['layer', 'element', 'form'], function () {
-        var layer = layui.layer,
-            element = layui.element,
-            form = layui.form;
+        var layer = layui.layer;
 
         $("#industry").click(function () {
+            let loading;
+            let index = 0;
             $.ajax({
                 url: "/spider/industry",
-                success: function (result) {
-                    layer.open({
-                        title: result
-                        , content: '获取行业的代码成功,已保存在redis的db0'
-                    });
+                beforeSend: function () {
+                    loading = layer.load(1);
                 },
-                error: function (result) {
-                    layer.open({
-                        title: result
-                        , content: '获取行业的代码失败'
-                    });
-                }
-            });
-        });
-
-        $("#industryKLine").click(function () {
-            $.ajax({
-                url: "/spider/industryKLine",
                 success: function (result) {
-                    layer.open({
-                        title: result
-                        , content: '获取行业的月k线成功,已保存在redis的db1'
+                    $("#append_industry").empty();
+                    $.each(result, function (key, value) {
+                        index++;
+                        let arr = value.split(',');
+                        $("#append_industry").append(
+                            `<tr>
+                                <td>` + index + `</td>
+                                <td>` + arr[0] + `</td>
+                                <td>` + arr[1] + `</td>
+                                <td>` + arr[2] + `</td>
+                                <td> <a href="https://quote.eastmoney.com/bk/90.` + arr[0] + `.html" target="_blank" style="color: red">点击查看</a> </td>
+                             </tr>`
+                        );
                     });
-                },
-                error: function (result) {
-                    layer.open({
-                        title: result
-                        , content: '获取行业的月k线失败'
-                    });
-                }
-            });
-        });
-
-        $("#month").click(function () {
-            $.ajax({
-                url: "/spider/month/" + $("#current").val(),
-                success: function (result) {
-                    $.each(result, function (index, obj) {
-                        $("#append" + index).empty();
-                        $.each(obj, function (key, value) {
-                            $("#append" + index).append(
-                                `<tr>
-                                    <td>` + key + `</td>
-                                    <td>` + value + `</td>
-                                </tr>`
-                            );
-                        });
-                    });
+                    layer.close(loading);
                     layer.open({
                         title: 'success'
-                        , content: '获取行业的月涨跌情况成功'
+                        , content: '获取行业信息成功'
                     });
                 },
                 error: function (result) {
+                    layer.close(loading);
                     layer.open({
                         title: result
-                        , content: '获取行业的月涨跌情况失败'
+                        , content: '获取行业信息失败'
                     });
                 }
             });
@@ -190,75 +118,33 @@
                     loading = layer.load(1);
                 },
                 success: function (result) {
-                    $("#append").empty();
+                    $("#append_stock").empty();
                     $.each(result, function (key, value) {
                         index++;
                         let arr = value.split(',');
-                        $("#append").append(
+                        $("#append_stock").append(
                             `<tr>
                                 <td>` + index + `</td>
-                                <td>` + key + `亿元</td>
-                                <td>` + arr[0] + ', ' + arr[1] + ', '
-                            + `<a href=` + arr[2] + ` target="_blank" style="color: red">查看涨跌幅</a>` + ', '
-                            + `<a href=` + arr[3] + ` target="_blank" style="color: blue">查看获利盘</a></td>
+                                <td>` + arr[0] + `</td>
+                                <td>` + arr[1] + `</td>
+                                <td>` + arr[2] + `</td>
+                                <td>` + arr[3] + `</td>
+                                <td> <a href=` + arr[4] + ` target="_blank" style="color: red">查看</a> </td>
+                                <td> <a href=` + arr[5] + ` target="_blank" style="color: blue">查看</a> </td>
                              </tr>`
                         );
                     });
                     layer.close(loading);
                     layer.open({
                         title: 'success'
-                        , content: '获取行业对应的股票信息成功'
+                        , content: '获取股票信息成功'
                     });
                 },
                 error: function (result) {
                     layer.close(loading);
                     layer.open({
                         title: result
-                        , content: '获取行业对应的股票信息失败'
-                    });
-                }
-            });
-        });
-
-        let type;
-        form.on('radio(collections)', function (data) {
-            type = data.value;
-        });
-
-        $("#collections").click(function () {
-            let loading;
-            let index = 0;
-            $.ajax({
-                url: "/spider/stock/collections/" + type,
-                beforeSend: function () {
-                    loading = layer.load(1);
-                },
-                success: function (result) {
-                    $("#append_").empty();
-                    $.each(result, function (key, value) {
-                        index++;
-                        let arr = value.split(',');
-                        $("#append_").append(
-                            `<tr>
-                                <td>` + index + `</td>
-                                <td>` + key + `亿元</td>
-                                <td>` + arr[0] + ', ' + arr[1] + ', '
-                            + `<a href=` + arr[2] + ` target="_blank" style="color: red">查看涨跌幅</a>` + ', '
-                            + `<a href=` + arr[3] + ` target="_blank" style="color: blue">查看获利盘</a></td>
-                             </tr>`
-                        );
-                    });
-                    layer.close(loading);
-                    layer.open({
-                        title: 'success'
-                        , content: '获取行业对应的股票集合成功'
-                    });
-                },
-                error: function (result) {
-                    layer.close(loading);
-                    layer.open({
-                        title: result
-                        , content: '获取行业对应的股票集合失败'
+                        , content: '获取股票信息失败'
                     });
                 }
             });

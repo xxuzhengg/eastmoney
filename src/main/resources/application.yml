@@ -10,29 +10,28 @@ spring:
 industry:
   np: 1
   pn: 1
-  pz: 100
+  pz: 965
   fs: m:90+t:2
   fields: f12,f14
 
 stock:
   np: 1
   pn: 1
-  pz: 500
-  fs: b
+  pz: 965
   fields: f12,f14
 
 industryKLine:
   fields1: f1,f3
-  fields2: f51,f59
-  klt: 103
-  fqt: 1
-  type: 90
-  end: 20500101
-
-stockKLineApi:
-  fields1: f1,f3
-  fields2: f57
+  fields2: f53
   klt: 101
   fqt: 1
   end: 20500101
-  lmt: 22
+  lmt: 180
+
+stockKLine:
+  fields1: f1,f3
+  fields2: f56,f57
+  klt: 101
+  fqt: 1
+  end: 20500101
+  lmt: 20

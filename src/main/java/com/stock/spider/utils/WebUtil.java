@@ -27,8 +27,6 @@ public class WebUtil {
             int statusCode = httpResponse.statusCode();
             if (statusCode == 200) {
                 return httpResponse.body();
-            } else {
-                return null;
             }
         } catch (Exception e) {
             e.printStackTrace();

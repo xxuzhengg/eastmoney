@@ -1,6 +1,7 @@
 package com.stock.spider.controller;
 
-import com.stock.spider.service.*;
+import com.stock.spider.service.IndustryService;
+import com.stock.spider.service.StockService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -19,16 +19,7 @@ public class SpiderController {
     IndustryService industryService;
 
     @Resource
-    IndustryKLineService industryKLineService;
-
-    @Resource
-    MonthService monthService;
-
-    @Resource
     StockService stockService;
-
-    @Resource
-    StockCollectionsService stockCollectionsService;
 
     @RequestMapping("/index")
     public String index() {
@@ -37,33 +28,10 @@ public class SpiderController {
 
     @RequestMapping("/industry")
     @ResponseBody
-    public String industry() {
-        try {
-            industryService.industry();
-            return "success";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "error";
-        }
-    }
-
-    @RequestMapping("/industryKLine")
-    @ResponseBody
-    public String industryKLine() {
-        try {
-            industryKLineService.industryKLine();
-            return "success";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "error";
-        }
-    }
-
-    @RequestMapping("/month/{current}")
-    @ResponseBody
-    public List<Map<String, String>> month(@PathVariable("current") String current) {
-        List<Map<String, String>> month = monthService.month(current);
-        return month;
+    public Map<BigDecimal, String> industry() {
+        industryService.industry();
+        Map<BigDecimal, String> industryKLine = industryService.industryKLine();
+        return industryKLine;
     }
 
     @RequestMapping("/stock/{code}")
@@ -71,12 +39,5 @@ public class SpiderController {
     public Map<BigDecimal, String> stock(@PathVariable("code") String code) {
         Map<BigDecimal, String> stock = stockService.stock(code);
         return stock;
-    }
-
-    @RequestMapping("/stock/collections/{type}")
-    @ResponseBody
-    public Map<BigDecimal, String> collections(@PathVariable("type") String type) {
-        Map<BigDecimal, String> collections = stockCollectionsService.stockCollections(type);
-        return collections;
     }
 }

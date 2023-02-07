@@ -12,10 +12,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
@@ -30,38 +27,42 @@ public class StockServiceImpl implements StockService {
     @Resource
     ObjectMapper objectMapper;
 
+    /**
+     * stockApi
+     */
     @Value("${stock.np}")
     private String np;
     @Value("${stock.pn}")
     private String pn;
     @Value("${stock.pz}")
     private String pz;
-    @Value("${stock.fs}")
-    private String fs;
     @Value("${stock.fields}")
     private String fields;
 
-    @Value("${stockKLineApi.fields1}")
+    /**
+     * stockKLineApi
+     */
+    @Value("${stockKLine.fields1}")
     private String fields1;
-    @Value("${stockKLineApi.fields2}")
+    @Value("${stockKLine.fields2}")
     private String fields2;
-    @Value("${stockKLineApi.klt}")
+    @Value("${stockKLine.klt}")
     private String klt;
-    @Value("${stockKLineApi.fqt}")
+    @Value("${stockKLine.fqt}")
     private String fqt;
-    @Value("${stockKLineApi.end}")
+    @Value("${stockKLine.end}")
     private String end;
-    @Value("${stockKLineApi.lmt}")
+    @Value("${stockKLine.lmt}")
     private String lmt;
 
     @Override
     public Map<BigDecimal, String> stock(String industryCode) {
-        String stockApi = "https://push2.eastmoney.com/api/qt/clist/get?np=%s&pn=%s&pz=%s&fs=%s:%s&fields=%s";
+        String stockApi = "https://push2.eastmoney.com/api/qt/clist/get?np=%s&pn=%s&pz=%s&fs=b:%s&fields=%s";
         String stockKLineApi = "https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&end=%s&lmt=%s";
 
         Map<BigDecimal, String> concurrentHashMap = new ConcurrentHashMap<>();
 
-        String formatStockApi = String.format(stockApi, np, pn, pz, fs, industryCode, fields);
+        String formatStockApi = String.format(stockApi, np, pn, pz, industryCode, fields);
         String web = webUtil.getWeb(formatStockApi);
         JsonNode node = null;
         try {
@@ -78,37 +79,31 @@ public class StockServiceImpl implements StockService {
                     String code = stock.get("f12").asText();
                     String name = stock.get("f14").asText();
                     if ((code.startsWith("60") || code.startsWith("00")) && !name.contains("ST")) {//排除退市股、创业板和科创板股票(暂无权限)
-                        StringBuilder sb = new StringBuilder();
-                        sb
-                                .append(code).append(",")
-                                .append(name).append(",")
-                                .append("https://quote.eastmoney.com/concept/%s" + code + ".html").append(",")
-                                .append("https://www.iwencai.com/unifiedwap/result?w=" + code + "收盘获利");
-                        String value;
-                        if (code.startsWith("60")) {
-                            value = String.format(sb.toString(), "sh");
-                        } else {
-                            value = String.format(sb.toString(), "sz");
-                        }
-
                         String type = "1";
                         if (code.startsWith("00")) {
                             type = "0";
                         }
-
                         String formatStockKLineApi = String.format(stockKLineApi, fields1, fields2, klt, fqt, type, code, end, lmt);
                         String stockWeb = webUtil.getWeb(formatStockKLineApi);
                         JsonNode kline = objectMapper.readTree(stockWeb).get("data").get("klines");
-
-                        if (kline.size() == Integer.valueOf(lmt)) {
-                            List<BigDecimal> list = new ArrayList<>();
-                            for (JsonNode jsonNode : kline) {
-                                list.add(new BigDecimal(jsonNode.asText()));
-                            }
-                            BigDecimal sum = list.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-                            BigDecimal avg = sum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(list.size()), 6, RoundingMode.HALF_UP);
-                            concurrentHashMap.put(avg, value);//精度高点 key才不容易重复
+                        List<BigDecimal> tradingVolume = new ArrayList<>();//成交量
+                        List<BigDecimal> businessVolume = new ArrayList<>();//成交额
+                        for (JsonNode jsonNode : kline) {
+                            tradingVolume.add(new BigDecimal(jsonNode.asText().split(",")[0]));
+                            businessVolume.add(new BigDecimal(jsonNode.asText().split(",")[1]));
                         }
+                        BigDecimal tradingVolumeSum = tradingVolume.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+                        BigDecimal tradingVolumeAvg = tradingVolumeSum.divide(new BigDecimal(1_0000)).divide(new BigDecimal(tradingVolume.size()), 6, RoundingMode.HALF_UP);
+                        BigDecimal businessVolumeSum = businessVolume.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+                        BigDecimal businessVolumeAvg = businessVolumeSum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(businessVolume.size()), 2, RoundingMode.HALF_UP);
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(code).append(",")
+                                .append(name).append(",")
+                                .append(String.format("%.2f", tradingVolumeAvg)).append(",")
+                                .append(businessVolumeAvg).append(",")
+                                .append("https://quote.eastmoney.com/concept/" + (code.startsWith("60") ? "sh" : "sz") + code + ".html").append(",")
+                                .append("https://www.iwencai.com/unifiedwap/result?w=" + code);
+                        concurrentHashMap.put(tradingVolumeAvg, sb.toString());
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -125,7 +120,7 @@ public class StockServiceImpl implements StockService {
         }
 
         Map<BigDecimal, String> result = new LinkedHashMap<>();
-        concurrentHashMap.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e -> result.put(e.getKey(), e.getValue()));
+        concurrentHashMap.entrySet().stream().sorted(Map.Entry.comparingByKey(Comparator.reverseOrder())).forEach(e -> result.put(e.getKey(), e.getValue()));
 
         return result;
     }
