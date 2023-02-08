@@ -87,20 +87,20 @@ public class StockServiceImpl implements StockService {
                         String stockWeb = webUtil.getWeb(formatStockKLineApi);
                         JsonNode kline = objectMapper.readTree(stockWeb).get("data").get("klines");
                         List<BigDecimal> tradingVolume = new ArrayList<>();//成交量
-                        List<BigDecimal> businessVolume = new ArrayList<>();//成交额
+                        List<BigDecimal> tradingAmount = new ArrayList<>();//成交额
                         for (JsonNode jsonNode : kline) {
                             tradingVolume.add(new BigDecimal(jsonNode.asText().split(",")[0]));
-                            businessVolume.add(new BigDecimal(jsonNode.asText().split(",")[1]));
+                            tradingAmount.add(new BigDecimal(jsonNode.asText().split(",")[1]));
                         }
                         BigDecimal tradingVolumeSum = tradingVolume.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
                         BigDecimal tradingVolumeAvg = tradingVolumeSum.divide(new BigDecimal(1_0000)).divide(new BigDecimal(tradingVolume.size()), 6, RoundingMode.HALF_UP);
-                        BigDecimal businessVolumeSum = businessVolume.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-                        BigDecimal businessVolumeAvg = businessVolumeSum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(businessVolume.size()), 2, RoundingMode.HALF_UP);
+                        BigDecimal tradingAmountSum = tradingAmount.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+                        BigDecimal tradingAmountAvg = tradingAmountSum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(tradingAmount.size()), 2, RoundingMode.HALF_UP);
                         StringBuilder sb = new StringBuilder();
                         sb.append(code).append(",")
                                 .append(name).append(",")
                                 .append(String.format("%.2f", tradingVolumeAvg)).append(",")
-                                .append(businessVolumeAvg).append(",")
+                                .append(tradingAmountAvg).append(",")
                                 .append("https://quote.eastmoney.com/concept/" + (code.startsWith("60") ? "sh" : "sz") + code + ".html").append(",")
                                 .append("https://www.iwencai.com/unifiedwap/result?w=" + code);
                         concurrentHashMap.put(tradingVolumeAvg, sb.toString());
