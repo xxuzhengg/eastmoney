@@ -102,7 +102,7 @@ public class StockServiceImpl implements StockService {
                                 .append(String.format("%.2f", tradingVolumeAvg)).append(",")
                                 .append(tradingAmountAvg).append(",")
                                 .append("https://quote.eastmoney.com/concept/" + (code.startsWith("60") ? "sh" : "sz") + code + ".html").append(",")
-                                .append("https://www.iwencai.com/unifiedwap/result?w=" + code);
+                                .append("https://www.iwencai.com/unifiedwap/result?w=" + code + "收盘获利");
                         concurrentHashMap.put(tradingVolumeAvg, sb.toString());
                     }
                 } catch (Exception e) {
