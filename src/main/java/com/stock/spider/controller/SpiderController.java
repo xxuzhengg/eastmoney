@@ -1,5 +1,7 @@
 package com.stock.spider.controller;
 
+import com.stock.spider.entity.Data;
+import com.stock.spider.entity.Result;
 import com.stock.spider.service.IndustryService;
 import com.stock.spider.service.StockService;
 import org.springframework.stereotype.Controller;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -36,8 +39,13 @@ public class SpiderController {
 
     @RequestMapping("/stock/{code}")
     @ResponseBody
-    public Map<BigDecimal, String> stock(@PathVariable("code") String code) {
-        Map<BigDecimal, String> stock = stockService.stock(code);
-        return stock;
+    public Result stock(@PathVariable("code") String code) {
+        List<Data> dataList = stockService.stock(code);
+        Result result = new Result();
+        result.setCode("0");
+        result.setMsg("success");
+        result.setCount(dataList.size());
+        result.setData(dataList);
+        return result;
     }
 }

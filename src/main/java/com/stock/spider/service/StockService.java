@@ -1,8 +1,9 @@
 package com.stock.spider.service;
 
-import java.math.BigDecimal;
-import java.util.Map;
+import com.stock.spider.entity.Data;
+
+import java.util.List;
 
 public interface StockService {
-    Map<BigDecimal, String> stock(String industryCode);
+    List<Data> stock(String industryCode);
 }

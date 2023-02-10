@@ -69,15 +69,11 @@ public class IndustryServiceImpl implements IndustryService {
         String web = webUtil.getWeb(formatApi);
         try {
             JsonNode jsonNode = objectMapper.readTree(web);
-            int total = Integer.parseInt(jsonNode.get("data").get("total").asText());
-            int size = redisUtil.getKeysByString("*").size();
-            if (total != size) {
-                JsonNode node = jsonNode.get("data").get("diff");
-                for (JsonNode industry : node) {
-                    String code = industry.get("f12").asText();
-                    String name = industry.get("f14").asText();
-                    redisUtil.setByString(code, name);
-                }
+            JsonNode node = jsonNode.get("data").get("diff");
+            for (JsonNode industry : node) {
+                String code = industry.get("f12").asText();
+                String name = industry.get("f14").asText();
+                redisUtil.setByString(code, name);
             }
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -104,7 +100,7 @@ public class IndustryServiceImpl implements IndustryService {
                     }
                     BigDecimal min = list.stream().min(BigDecimal::compareTo).get();
                     BigDecimal now = list.get(list.size() - 1);
-                    BigDecimal divide = now.subtract(min).divide(min, 6, RoundingMode.HALF_UP);
+                    BigDecimal divide = now.subtract(min).divide(min, 6, RoundingMode.HALF_UP);//精度大 key才不容易重复
                     sb.append(industryCode).append(",")
                             .append(redisUtil.getValueByString(industryCode)).append(",")
                             .append(String.format("%.2f", divide.multiply(new BigDecimal(100)))).append("%");
