@@ -16,7 +16,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
 
 @Service
 public class StockServiceImpl implements StockService {
@@ -73,8 +72,6 @@ public class StockServiceImpl implements StockService {
             e.printStackTrace();
         }
 
-        CountDownLatch countDownLatch = new CountDownLatch(node.size());
-
         for (JsonNode stock : node) {
             taskExecutor.execute(() -> {
                 try {
@@ -88,42 +85,33 @@ public class StockServiceImpl implements StockService {
                         String formatStockKLineApi = String.format(stockKLineApi, fields1, fields2, klt, fqt, type, code, end, lmt);
                         String stockWeb = webUtil.getWeb(formatStockKLineApi);
                         JsonNode kline = objectMapper.readTree(stockWeb).get("data").get("klines");
-                        List<BigDecimal> tradingVolume = new ArrayList<>();//成交量
-                        List<BigDecimal> tradingAmount = new ArrayList<>();//成交额
-                        for (JsonNode jsonNode : kline) {
-                            tradingVolume.add(new BigDecimal(jsonNode.asText().split(",")[0]));
-                            tradingAmount.add(new BigDecimal(jsonNode.asText().split(",")[1]));
+                        if (kline != null && kline.size() > 0) {//排除新股还未上市的情况
+                            List<BigDecimal> tradingVolume = new ArrayList<>();//成交量
+                            List<BigDecimal> tradingAmount = new ArrayList<>();//成交额
+                            for (JsonNode jsonNode : kline) {
+                                tradingVolume.add(new BigDecimal(jsonNode.asText().split(",")[0]));
+                                tradingAmount.add(new BigDecimal(jsonNode.asText().split(",")[1]));
+                            }
+                            BigDecimal tradingVolumeSum = tradingVolume.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+                            BigDecimal tradingVolumeAvg = tradingVolumeSum.divide(new BigDecimal(1_0000)).divide(new BigDecimal(tradingVolume.size()), 2, RoundingMode.HALF_UP);
+                            BigDecimal tradingAmountSum = tradingAmount.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+                            BigDecimal tradingAmountAvg = tradingAmountSum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(tradingAmount.size()), 2, RoundingMode.HALF_UP);
+                            Data data = new Data();
+                            data.setDays(tradingVolume.size());
+                            data.setStockCode(code);
+                            data.setStockName(name);
+                            data.setTradingVolumeAvg(tradingVolumeAvg);
+                            data.setTradingAmountAvg(tradingAmountAvg);
+                            data.setScore(0);
+                            data.setLine("<a href='https://quote.eastmoney.com/concept/" + (code.startsWith("60") ? "sh" : "sz") + code + ".html' target='_blank' style='color: red'>查看</a>");
+                            data.setProfit("<a href='https://www.iwencai.com/unifiedwap/result?w=" + code + "收盘获利' target='_blank' style='color: blue'>查看</a>");
+                            dataList.add(data);
                         }
-                        BigDecimal tradingVolumeSum = tradingVolume.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-                        BigDecimal tradingVolumeAvg = tradingVolumeSum.divide(new BigDecimal(1_0000)).divide(new BigDecimal(tradingVolume.size()), 2, RoundingMode.HALF_UP);
-                        BigDecimal tradingAmountSum = tradingAmount.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-                        BigDecimal tradingAmountAvg = tradingAmountSum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(tradingAmount.size()), 2, RoundingMode.HALF_UP);
-                        Data data = new Data();
-                        data.setStockCode(code);
-                        data.setStockName(name);
-                        data.setTradingVolumeAvg(tradingVolumeAvg);
-                        data.setTradingAmountAvg(tradingAmountAvg);
-                        data.setScore(0);
-                        data.setLine("<a href='https://quote.eastmoney.com/concept/" + (code.startsWith("60") ? "sh" : "sz") + code + ".html' target='_blank' style='color: red'>查看</a>");
-                        data.setProfit("<a href='https://www.iwencai.com/unifiedwap/result?w=" + code + "收盘获利' target='_blank' style='color: blue'>查看</a>");
-                        dataList.add(data);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                } finally {
-                    countDownLatch.countDown();
                 }
             });
-        }
-
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        for (int i = 0; i < dataList.size(); i++) {
-            dataList.get(i).setId((i + 1));
         }
 
         return dataList;
