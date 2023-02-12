@@ -3,7 +3,6 @@ package com.stock.spider.entity;
 import java.math.BigDecimal;
 
 public class Data {
-    int days;//实际交易日(虽然默认取的是最近一个月,但是有可能存在刚上市不久的次新股的情况)
     String stockCode;//股票代码
     String stockName;//股票名称
     BigDecimal tradingVolumeAvg;//日均成交量(万)
@@ -11,14 +10,6 @@ public class Data {
     int score;//个股跟着行业，同涨同跌得0分，逆涨得-1分，逆跌得1分
     String line;//k线图
     String profit;//获利盘
-
-    public int getDays() {
-        return days;
-    }
-
-    public void setDays(int days) {
-        this.days = days;
-    }
 
     public String getStockCode() {
         return stockCode;

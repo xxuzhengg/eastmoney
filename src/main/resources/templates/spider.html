@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="/layui/css/layui.css">
 </head>
 <body>
-<div class="layui-tab" style="width: 1050px">
+<div class="layui-tab" style="width: 930px">
     <ul class="layui-tab-title">
         <li>获取行业信息(最近半年)</li>
         <li>获取行业对应的股票信息(最近一个月)</li>
@@ -104,14 +104,13 @@
                 , cols: [
                     [
                         {type: 'numbers', title: '序号', width: 60, fixed: 'left'}
-                        , {field: 'days', title: '实际交易日', width: 120}
-                        , {field: 'stockCode', title: '股票代码', width: 120}
-                        , {field: 'stockName', title: '股票名称', width: 120}
-                        , {field: 'tradingVolumeAvg', title: '日均成交量(万)', width: 160, sort: true}
-                        , {field: 'tradingAmountAvg', title: '日均成交额(亿)', width: 160, sort: true}
-                        , {field: 'score', title: '个股评分', width: 120, sort: true}
-                        , {field: 'line', title: 'k线图', width: 90}
-                        , {field: 'profit', title: '获利盘', width: 90}
+                        , {field: 'stockCode', title: '股票代码', align: 'center', width: 120}
+                        , {field: 'stockName', title: '股票名称', align: 'center', width: 120}
+                        , {field: 'tradingVolumeAvg', title: '日均成交量(万)', align: 'center', width: 160, sort: true}
+                        , {field: 'tradingAmountAvg', title: '日均成交额(亿)', align: 'center', width: 160, sort: true}
+                        , {field: 'score', title: '个股评分', align: 'center', width: 120, sort: true}
+                        , {field: 'line', title: 'k线图', align: 'center', width: 90}
+                        , {field: 'profit', title: '获利盘', align: 'center', width: 90}
                     ]
                 ]
             });

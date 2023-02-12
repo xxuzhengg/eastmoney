@@ -97,7 +97,6 @@ public class StockServiceImpl implements StockService {
                             BigDecimal tradingAmountSum = tradingAmount.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
                             BigDecimal tradingAmountAvg = tradingAmountSum.divide(new BigDecimal(1_0000_0000)).divide(new BigDecimal(tradingAmount.size()), 2, RoundingMode.HALF_UP);
                             Data data = new Data();
-                            data.setDays(tradingVolume.size());
                             data.setStockCode(code);
                             data.setStockName(name);
                             data.setTradingVolumeAvg(tradingVolumeAvg);
