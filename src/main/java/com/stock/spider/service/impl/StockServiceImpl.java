@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class StockServiceImpl implements StockService {
@@ -61,6 +62,7 @@ public class StockServiceImpl implements StockService {
     public List<Data> stock(String industryCode) {
         String stockApi = "https://push2.eastmoney.com/api/qt/clist/get?np=%s&pn=%s&pz=%s&fs=b:%s&fields=%s";
         String stockKLineApi = "https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=%s.%s&end=%s&lmt=%s";
+        String industryKLineApi = "https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=90.%s&end=%s&lmt=%s";
 
         List<Data> dataList = new CopyOnWriteArrayList<>();
 
@@ -87,13 +89,25 @@ public class StockServiceImpl implements StockService {
                         }
                         String formatStockKLineApi = String.format(stockKLineApi, fields1, fields2, klt, fqt, type, code, end, lmt);
                         String stockWeb = webUtil.getWeb(formatStockKLineApi);
-                        JsonNode kline = objectMapper.readTree(stockWeb).get("data").get("klines");
-                        if (kline != null && kline.size() > 0) {//排除新股还未上市的情况
-                            List<BigDecimal> tradingVolume = new ArrayList<>();//成交量
-                            List<BigDecimal> tradingAmount = new ArrayList<>();//成交额
-                            for (JsonNode jsonNode : kline) {
-                                tradingVolume.add(new BigDecimal(jsonNode.asText().split(",")[0]));
-                                tradingAmount.add(new BigDecimal(jsonNode.asText().split(",")[1]));
+                        JsonNode stockKLine = objectMapper.readTree(stockWeb).get("data").get("klines");
+                        if (stockKLine != null && stockKLine.size() > 0) {//排除新股还未上市的情况
+                            String formatIndustryKLineApi = String.format(industryKLineApi, fields1, "f59", klt, fqt, industryCode, end, lmt);
+                            String industryWeb = webUtil.getWeb(formatIndustryKLineApi);
+                            JsonNode industryKLine = objectMapper.readTree(industryWeb).get("data").get("klines");
+                            AtomicInteger atomicInteger = new AtomicInteger(0);
+                            List<BigDecimal> tradingVolume = new ArrayList<>();
+                            List<BigDecimal> tradingAmount = new ArrayList<>();
+                            for (int i = stockKLine.size() - 1; i >= 0; i--) {
+                                tradingVolume.add(new BigDecimal(stockKLine.get(i).asText().split(",")[0]));//成交量
+                                tradingAmount.add(new BigDecimal(stockKLine.get(i).asText().split(",")[1]));//成交额
+                                BigDecimal industryChange = new BigDecimal(industryKLine.get(i).asText());//行业涨跌幅
+                                BigDecimal stockChange = new BigDecimal(stockKLine.get(i).asText().split(",")[2]);//个股涨跌幅
+                                BigDecimal zero = new BigDecimal(0);//初始化
+                                if (industryChange.compareTo(zero) == -1 && stockChange.compareTo(zero) > -1) {//逆跌
+                                    atomicInteger.incrementAndGet();
+                                } else if (industryChange.compareTo(zero) == 1 && stockChange.compareTo(zero) < 1) {//逆涨
+                                    atomicInteger.decrementAndGet();
+                                }
                             }
                             BigDecimal tradingVolumeSum = tradingVolume.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
                             BigDecimal tradingVolumeAvg = tradingVolumeSum.divide(new BigDecimal(1_0000)).divide(new BigDecimal(tradingVolume.size()), 2, RoundingMode.HALF_UP);
@@ -104,7 +118,7 @@ public class StockServiceImpl implements StockService {
                             data.setStockName(name);
                             data.setTradingVolumeAvg(tradingVolumeAvg);
                             data.setTradingAmountAvg(tradingAmountAvg);
-                            data.setScore(0);
+                            data.setScore(atomicInteger.intValue());
                             data.setLine("<a href='https://quote.eastmoney.com/concept/" + (code.startsWith("60") ? "sh" : "sz") + code + ".html' target='_blank' style='color: red'>查看</a>");
                             data.setProfit("<a href='https://www.iwencai.com/unifiedwap/result?w=" + code + "收盘获利' target='_blank' style='color: blue'>查看</a>");
                             dataList.add(data);

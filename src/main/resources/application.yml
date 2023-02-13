@@ -30,7 +30,7 @@ industryKLine:
 
 stockKLine:
   fields1: f1,f3
-  fields2: f56,f57
+  fields2: f56,f57,f59
   klt: 101
   fqt: 1
   end: 20500101
