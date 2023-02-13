@@ -3,6 +3,7 @@ package com.stock.spider.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stock.spider.entity.Data;
 import com.stock.spider.service.IndustryService;
 import com.stock.spider.utils.RedisUtil;
 import com.stock.spider.utils.WebUtil;
@@ -13,8 +14,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 
 @Service
@@ -81,15 +84,14 @@ public class IndustryServiceImpl implements IndustryService {
     }
 
     @Override
-    public Map<BigDecimal, String> industryKLine() {
+    public List<Data> industryKLine() {
         String industryKLineApi = "https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=90.%s&end=%s&lmt=%s";
         Set<String> industrySet = redisUtil.getKeysByString("*");
-        Map<BigDecimal, String> concurrentHashMap = new ConcurrentHashMap<>();
+        List<Data> dataList = new CopyOnWriteArrayList<>();
         CountDownLatch countDownLatch = new CountDownLatch(industrySet.size());
         for (String industryCode : industrySet) {
             taskExecutor.execute(() -> {
                 List<BigDecimal> list = new ArrayList<>();
-                StringBuilder sb = new StringBuilder();
                 String formatApi = String.format(industryKLineApi, fields1, fields2, klt, fqt, industryCode, end, lmt);
                 String web = webUtil.getWeb(formatApi);
                 try {
@@ -100,11 +102,13 @@ public class IndustryServiceImpl implements IndustryService {
                     }
                     BigDecimal min = list.stream().min(BigDecimal::compareTo).get();
                     BigDecimal now = list.get(list.size() - 1);
-                    BigDecimal divide = now.subtract(min).divide(min, 6, RoundingMode.HALF_UP);//精度大 key才不容易重复
-                    sb.append(industryCode).append(",")
-                            .append(redisUtil.getValueByString(industryCode)).append(",")
-                            .append(String.format("%.2f", divide.multiply(new BigDecimal(100)))).append("%");
-                    concurrentHashMap.put(divide, sb.toString());
+                    BigDecimal divide = now.subtract(min).divide(min, 4, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
+                    Data data = new Data();
+                    data.setIndustryCode(industryCode);
+                    data.setIndustryName(redisUtil.getValueByString(industryCode));
+                    data.setIncrease(divide);
+                    data.setLine("<a href='https://quote.eastmoney.com/bk/90." + industryCode + ".html' target='_blank' style='color: red'>查看</a>");
+                    dataList.add(data);
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 } finally {
@@ -119,9 +123,6 @@ public class IndustryServiceImpl implements IndustryService {
             e.printStackTrace();
         }
 
-        Map<BigDecimal, String> result = new LinkedHashMap<>();
-        concurrentHashMap.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEachOrdered(e -> result.put(e.getKey(), e.getValue()));
-
-        return result;
+        return dataList;
     }
 }

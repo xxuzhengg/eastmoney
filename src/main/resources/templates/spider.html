@@ -19,18 +19,7 @@
                         点击获取行业信息
                     </button>
                 </div>
-                <table class="layui-table">
-                    <thead>
-                    <tr>
-                        <th>编号</th>
-                        <th>行业代码</th>
-                        <th>行业名称</th>
-                        <th>涨幅(当天值与最低值)</th>
-                        <th>k线图</th>
-                    </tr>
-                    </thead>
-                    <tbody id="append_industry"></tbody>
-                </table>
+                <table id="industryMsg"></table>
             </form>
         </div>
 
@@ -46,7 +35,7 @@
                         点击获取股票信息
                     </button>
                 </div>
-                <table id="demo" lay-filter="test"></table>
+                <table id="stockMsg"></table>
             </form>
         </div>
     </div>
@@ -59,47 +48,24 @@
             , table = layui.table;
 
         $("#industry").click(function () {
-            let loading;
-            let index = 0;
-            $.ajax({
-                url: "/spider/industry",
-                beforeSend: function () {
-                    loading = layer.load(1);
-                },
-                success: function (result) {
-                    $("#append_industry").empty();
-                    $.each(result, function (key, value) {
-                        index++;
-                        let arr = value.split(',');
-                        $("#append_industry").append(
-                            `<tr>
-                                <td>` + index + `</td>
-                                <td>` + arr[0] + `</td>
-                                <td>` + arr[1] + `</td>
-                                <td>` + arr[2] + `</td>
-                                <td> <a href="https://quote.eastmoney.com/bk/90.` + arr[0] + `.html" target="_blank" style="color: red">点击查看</a> </td>
-                             </tr>`
-                        );
-                    });
-                    layer.close(loading);
-                    layer.open({
-                        title: 'success'
-                        , content: '获取行业信息成功'
-                    });
-                },
-                error: function (result) {
-                    layer.close(loading);
-                    layer.open({
-                        title: result
-                        , content: '获取行业信息失败'
-                    });
-                }
+            table.render({
+                elem: '#industryMsg'
+                , url: '/spider/industry'
+                , cols: [
+                    [
+                        {type: 'numbers', title: '序号', width: 60, fixed: 'left'}
+                        , {field: 'industryCode', title: '行业代码', align: 'center', width: 120}
+                        , {field: 'industryName', title: '行业名称', align: 'center', width: 120}
+                        , {field: 'increase', title: '涨幅(%)', align: 'center', width: 120, sort: true}
+                        , {field: 'line', title: 'k线图', align: 'center', width: 90}
+                    ]
+                ]
             });
         });
 
         $("#stock").click(function () {
             table.render({
-                elem: '#demo'
+                elem: '#stockMsg'
                 , url: '/spider/stock/' + $("#industryCode").val()
                 , cols: [
                     [

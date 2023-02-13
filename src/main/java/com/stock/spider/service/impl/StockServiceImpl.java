@@ -16,6 +16,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 
 @Service
 public class StockServiceImpl implements StockService {
@@ -72,6 +73,8 @@ public class StockServiceImpl implements StockService {
             e.printStackTrace();
         }
 
+        CountDownLatch countDownLatch = new CountDownLatch(node.size());
+
         for (JsonNode stock : node) {
             taskExecutor.execute(() -> {
                 try {
@@ -109,8 +112,16 @@ public class StockServiceImpl implements StockService {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    countDownLatch.countDown();
                 }
             });
+        }
+
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         return dataList;

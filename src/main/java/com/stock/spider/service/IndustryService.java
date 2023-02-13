@@ -1,10 +1,11 @@
 package com.stock.spider.service;
 
-import java.math.BigDecimal;
-import java.util.Map;
+import com.stock.spider.entity.Data;
+
+import java.util.List;
 
 public interface IndustryService {
     void industry();
 
-    Map<BigDecimal, String> industryKLine();
+    List<Data> industryKLine();
 }

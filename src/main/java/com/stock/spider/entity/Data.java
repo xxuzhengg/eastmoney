@@ -3,13 +3,57 @@ package com.stock.spider.entity;
 import java.math.BigDecimal;
 
 public class Data {
+
+    /**
+     * 获取行业信息(最近半年)
+     */
+    String industryCode;//行业代码
+    String industryName;//行业名称
+    BigDecimal increase;//涨幅(当天值与最低值)
+    String line;//k线图(第三方网站链接)
+
+
+    /**
+     * 获取行业对应的股票信息(最近一个月)
+     */
     String stockCode;//股票代码
     String stockName;//股票名称
     BigDecimal tradingVolumeAvg;//日均成交量(万)
     BigDecimal tradingAmountAvg;//日均成交额(亿)
     int score;//个股跟着行业，同涨同跌得0分，逆涨得-1分，逆跌得1分
-    String line;//k线图
-    String profit;//获利盘
+    String profit;//获利盘(第三方网站链接)
+
+    public String getIndustryCode() {
+        return industryCode;
+    }
+
+    public void setIndustryCode(String industryCode) {
+        this.industryCode = industryCode;
+    }
+
+    public String getIndustryName() {
+        return industryName;
+    }
+
+    public void setIndustryName(String industryName) {
+        this.industryName = industryName;
+    }
+
+    public BigDecimal getIncrease() {
+        return increase;
+    }
+
+    public void setIncrease(BigDecimal increase) {
+        this.increase = increase;
+    }
+
+    public String getLine() {
+        return line;
+    }
+
+    public void setLine(String line) {
+        this.line = line;
+    }
 
     public String getStockCode() {
         return stockCode;
@@ -49,14 +93,6 @@ public class Data {
 
     public void setScore(int score) {
         this.score = score;
-    }
-
-    public String getLine() {
-        return line;
-    }
-
-    public void setLine(String line) {
-        this.line = line;
     }
 
     public String getProfit() {

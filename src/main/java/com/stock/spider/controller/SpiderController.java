@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/spider")
@@ -31,10 +29,15 @@ public class SpiderController {
 
     @RequestMapping("/industry")
     @ResponseBody
-    public Map<BigDecimal, String> industry() {
+    public Result industry() {
         industryService.industry();
-        Map<BigDecimal, String> industryKLine = industryService.industryKLine();
-        return industryKLine;
+        List<Data> dataList = industryService.industryKLine();
+        Result result = new Result();
+        result.setCode("0");
+        result.setMsg("success");
+        result.setCount(dataList.size());
+        result.setData(dataList);
+        return result;
     }
 
     @RequestMapping("/stock/{code}")
