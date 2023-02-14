@@ -94,7 +94,7 @@ public class StockServiceImpl implements StockService {
                             String formatIndustryKLineApi = String.format(industryKLineApi, fields1, "f59", klt, fqt, industryCode, end, lmt);
                             String industryWeb = webUtil.getWeb(formatIndustryKLineApi);
                             JsonNode industryKLine = objectMapper.readTree(industryWeb).get("data").get("klines");
-                            AtomicInteger atomicInteger = new AtomicInteger(0);
+                            int score = 0;
                             List<BigDecimal> tradingVolume = new ArrayList<>();
                             List<BigDecimal> tradingAmount = new ArrayList<>();
                             for (int i = stockKLine.size() - 1; i >= 0; i--) {
@@ -104,9 +104,9 @@ public class StockServiceImpl implements StockService {
                                 BigDecimal stockChange = new BigDecimal(stockKLine.get(i).asText().split(",")[2]);//个股涨跌幅
                                 BigDecimal zero = new BigDecimal(0);//初始化
                                 if (industryChange.compareTo(zero) == -1 && stockChange.compareTo(zero) > -1) {//逆跌
-                                    atomicInteger.incrementAndGet();
+                                    score++;
                                 } else if (industryChange.compareTo(zero) == 1 && stockChange.compareTo(zero) < 1) {//逆涨
-                                    atomicInteger.decrementAndGet();
+                                    score--;
                                 }
                             }
                             BigDecimal tradingVolumeSum = tradingVolume.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -118,7 +118,7 @@ public class StockServiceImpl implements StockService {
                             data.setStockName(name);
                             data.setTradingVolumeAvg(tradingVolumeAvg);
                             data.setTradingAmountAvg(tradingAmountAvg);
-                            data.setScore(atomicInteger.intValue());
+                            data.setScore(score);
                             data.setLine("<a href='https://quote.eastmoney.com/concept/" + (code.startsWith("60") ? "sh" : "sz") + code + ".html' target='_blank' style='color: red'>查看</a>");
                             data.setProfit("<a href='https://www.iwencai.com/unifiedwap/result?w=" + code + "收盘获利' target='_blank' style='color: blue'>查看</a>");
                             dataList.add(data);
