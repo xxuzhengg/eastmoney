@@ -101,13 +101,10 @@ public class StockServiceImpl implements StockService {
                                 tradingAmount.add(new BigDecimal(stockKLine.get(i).asText().split(",")[1]));//成交额
                                 BigDecimal industryChange = new BigDecimal(industryKLine.get(i).asText());//行业涨跌幅
                                 BigDecimal stockChange = new BigDecimal(stockKLine.get(i).asText().split(",")[2]);//个股涨跌幅
-                                BigDecimal zero = new BigDecimal(0);//初始化
-                                if (industryChange.compareTo(zero) == -1 && stockChange.compareTo(zero) > -1) {//逆跌
-                                    score++;
-                                } else if (industryChange.compareTo(zero) == 1 && stockChange.compareTo(zero) < 1) {//逆涨
-                                    score--;
-                                }
+                                score += stockChange.subtract(industryChange).intValue();
                             }
+                            //System.out.println(formatStockKLineApi);
+                            //System.out.println(formatIndustryKLineApi);
                             BigDecimal tradingVolumeSum = tradingVolume.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
                             BigDecimal tradingVolumeAvg = tradingVolumeSum.divide(new BigDecimal(1_0000)).divide(new BigDecimal(tradingVolume.size()), 2, RoundingMode.HALF_UP);
                             BigDecimal tradingAmountSum = tradingAmount.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
