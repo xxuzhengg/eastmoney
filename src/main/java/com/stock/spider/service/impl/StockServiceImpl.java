@@ -93,7 +93,7 @@ public class StockServiceImpl implements StockService {
                             String formatIndustryKLineApi = String.format(industryKLineApi, fields1, "f59", klt, fqt, industryCode, end, lmt);
                             String industryWeb = webUtil.getWeb(formatIndustryKLineApi);
                             JsonNode industryKLine = objectMapper.readTree(industryWeb).get("data").get("klines");
-                            int score = 0;
+                            BigDecimal score = new BigDecimal(0);
                             List<BigDecimal> tradingVolume = new ArrayList<>();
                             List<BigDecimal> tradingAmount = new ArrayList<>();
                             for (int i = stockKLine.size() - 1; i >= 0; i--) {
@@ -101,10 +101,8 @@ public class StockServiceImpl implements StockService {
                                 tradingAmount.add(new BigDecimal(stockKLine.get(i).asText().split(",")[1]));//成交额
                                 BigDecimal industryChange = new BigDecimal(industryKLine.get(i).asText());//行业涨跌幅
                                 BigDecimal stockChange = new BigDecimal(stockKLine.get(i).asText().split(",")[2]);//个股涨跌幅
-                                score += stockChange.subtract(industryChange).intValue();
+                                score = score.add(stockChange.subtract(industryChange));
                             }
-                            //System.out.println(formatStockKLineApi);
-                            //System.out.println(formatIndustryKLineApi);
                             BigDecimal tradingVolumeSum = tradingVolume.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
                             BigDecimal tradingVolumeAvg = tradingVolumeSum.divide(new BigDecimal(1_0000)).divide(new BigDecimal(tradingVolume.size()), 2, RoundingMode.HALF_UP);
                             BigDecimal tradingAmountSum = tradingAmount.stream().reduce(BigDecimal.ZERO, BigDecimal::add);

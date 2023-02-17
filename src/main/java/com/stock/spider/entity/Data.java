@@ -20,7 +20,7 @@ public class Data {
     String stockName;//股票名称
     BigDecimal tradingVolumeAvg;//日均成交量(万)
     BigDecimal tradingAmountAvg;//日均成交额(亿)
-    int score;//个股涨幅与对应行业涨幅的差值的和
+    BigDecimal score;//个股涨幅与对应行业涨幅的差值的和
     String profit;//获利盘(第三方网站链接)
 
     public String getIndustryCode() {
@@ -87,11 +87,11 @@ public class Data {
         this.tradingAmountAvg = tradingAmountAvg;
     }
 
-    public int getScore() {
+    public BigDecimal getScore() {
         return score;
     }
 
-    public void setScore(int score) {
+    public void setScore(BigDecimal score) {
         this.score = score;
     }
 
