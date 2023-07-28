@@ -48,7 +48,7 @@ public class StockServiceImpl implements StockService {
     private String fields1;
     @Value("${stockKLine.fields2}")
     private String fields2;
-    @Value("${stockKLine.klt}")
+    @Value("101")
     private String klt;
     @Value("${stockKLine.fqt}")
     private String fqt;

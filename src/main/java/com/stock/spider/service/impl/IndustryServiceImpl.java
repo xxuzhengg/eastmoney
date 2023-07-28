@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -56,14 +56,17 @@ public class IndustryServiceImpl implements IndustryService {
     private String fields1;
     @Value("${industryKLine.fields2}")
     private String fields2;
-    @Value("${industryKLine.klt}")
-    private String klt;
     @Value("${industryKLine.fqt}")
     private String fqt;
     @Value("${industryKLine.end}")
     private String end;
     @Value("${industryKLine.lmt}")
     private String lmt;
+
+    /**
+     * k线类型 (101日线 102周线 103月线 104季线 105半年线 106年线)
+     */
+    private final List<String> kLineTypeList = Arrays.asList("101", "102", "103", "104", "105", "106");
 
     @Override
     public void industry() {
@@ -91,25 +94,27 @@ public class IndustryServiceImpl implements IndustryService {
         CountDownLatch countDownLatch = new CountDownLatch(industrySet.size());
         for (String industryCode : industrySet) {
             taskExecutor.execute(() -> {
-                List<BigDecimal> list = new ArrayList<>();
-                String formatApi = String.format(industryKLineApi, fields1, fields2, klt, fqt, industryCode, end, lmt);
-                String web = webUtil.getWeb(formatApi);
                 try {
-                    JsonNode jsonNode = objectMapper.readTree(web);
-                    JsonNode node = jsonNode.get("data").get("klines");
-                    for (JsonNode kline : node) {
-                        list.add(new BigDecimal(kline.asText()));
+                    List<BigDecimal> increaseList = new ArrayList<>();
+                    for (String klt : kLineTypeList) {
+                        String formatApi = String.format(industryKLineApi, fields1, fields2, klt, fqt, industryCode, end, lmt);
+                        String web = webUtil.getWeb(formatApi);
+                        JsonNode jsonNode = objectMapper.readTree(web);
+                        BigDecimal increase = new BigDecimal(jsonNode.get("data").get("klines").get(0).asText());
+                        increaseList.add(increase);
                     }
-                    BigDecimal min = list.stream().min(BigDecimal::compareTo).get();
-                    BigDecimal now = list.get(list.size() - 1);
-                    BigDecimal divide = now.subtract(min).divide(min, 4, RoundingMode.HALF_UP).multiply(new BigDecimal(100));
                     Data data = new Data();
                     data.setIndustryCode(industryCode);
                     data.setIndustryName(redisUtil.getValueByString(industryCode));
-                    data.setIncrease(divide);
                     data.setLine("<a href='https://quote.eastmoney.com/bk/90." + industryCode + ".html' target='_blank' style='color: red'>查看</a>");
+                    data.setDayIncrease(increaseList.get(0));
+                    data.setWeekIncrease(increaseList.get(1));
+                    data.setMonthIncrease(increaseList.get(2));
+                    data.setQuarterIncrease(increaseList.get(3));
+                    data.setHalfYearIncrease(increaseList.get(4));
+                    data.setYearIncrease(increaseList.get(5));
                     dataList.add(data);
-                } catch (JsonProcessingException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
                     countDownLatch.countDown();
