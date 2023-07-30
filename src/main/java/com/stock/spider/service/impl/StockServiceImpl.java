@@ -85,7 +85,7 @@ public class StockServiceImpl implements StockService {
                     String code = stock.get("f12").asText();
                     String name = stock.get("f14").asText();
                     String type = "1";//沪股
-                    if (code.startsWith("0") || code.startsWith("3") || code.startsWith("2")) {
+                    if (code.startsWith("0") || code.startsWith("2") || code.startsWith("3") || code.startsWith("8")) {
                         type = "0";//深股
                     }
                     String formatStockKLineApi = String.format(stockKLineApi, fields1, fields2, klt, fqt, type, code, end, lmt);
