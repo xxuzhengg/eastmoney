@@ -58,7 +58,7 @@ public class StockServiceImpl implements StockService {
     /**
      * k线类型 (101日线 102周线 103月线 104季线 105半年线 106年线)
      */
-    private final Map<String, Integer> kLineTypeMap = Map.of("101", 1, "102", 5, "103", 20, "104", 60, "105", 180, "106", 360);
+    private final Map<String, Integer> kLineTypeMap = Map.of("101", 1, "102", 5, "103", 20, "104", 60, "105", 120, "106", 240);
 
     @Override
     public List<Data> stock(String industryCode, String klt) {
