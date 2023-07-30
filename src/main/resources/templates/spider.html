@@ -31,6 +31,21 @@
                         <input type="text" id="industryCode" required lay-verify="required" placeholder="请输入行业代码"
                                autocomplete="off" class="layui-input">
                     </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">k线类型:</label>
+                    <div class="layui-input-inline">
+                        <select id="klt" name="klt" lay-verify="required">
+                            <option value="101">最近一天</option>
+                            <option value="102">最近一周</option>
+                            <option value="103">最近一月</option>
+                            <option value="104">最近一季</option>
+                            <option value="105">最近半年</option>
+                            <option value="106">最近一年</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
                     <button id="stock" type="button" class="layui-btn layui-btn-radius layui-btn-primary">
                         点击获取股票信息
                     </button>
@@ -71,7 +86,7 @@
         $("#stock").click(function () {
             table.render({
                 elem: '#stockMsg'
-                , url: '/spider/stock/' + $("#industryCode").val()
+                , url: '/spider/stock/' + $("#industryCode").val() + '/' + $("#klt").val()
                 , cols: [
                     [
                         {type: 'numbers', title: '序号', width: 60, fixed: 'left'}

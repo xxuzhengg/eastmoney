@@ -40,10 +40,10 @@ public class SpiderController {
         return result;
     }
 
-    @RequestMapping("/stock/{code}")
+    @RequestMapping("/stock/{code}/{klt}")
     @ResponseBody
-    public Result stock(@PathVariable("code") String code) {
-        List<Data> dataList = stockService.stock(code);
+    public Result stock(@PathVariable("code") String code, @PathVariable("klt") String klt) {
+        List<Data> dataList = stockService.stock(code, klt);
         Result result = new Result();
         result.setCode("0");
         result.setMsg("success");
