@@ -28,14 +28,13 @@
                 <div class="layui-form-item">
                     <label class="layui-form-label">行业代码:</label>
                     <div class="layui-input-inline">
-                        <input type="text" id="industryCode" required lay-verify="required" placeholder="请输入行业代码"
-                               autocomplete="off" class="layui-input">
+                        <input type="text" id="industryCode" placeholder="请输入行业代码" class="layui-input">
                     </div>
                 </div>
                 <div class="layui-form-item">
                     <label class="layui-form-label">k线类型:</label>
                     <div class="layui-input-inline">
-                        <select id="klt" name="klt" lay-verify="required">
+                        <select id="klt" name="klt">
                             <option value="101">最近一天</option>
                             <option value="102">最近一周</option>
                             <option value="103">最近一月</option>
@@ -58,9 +57,8 @@
 <script src="/jquery/jquery-3.6.3.min.js"></script>
 <script src="/layui/layui.js"></script>
 <script>
-    layui.use(['layer', 'table'], function () {
-        var layer = layui.layer
-            , table = layui.table;
+    layui.use(['table'], function () {
+        let table = layui.table;
 
         $("#industry").click(function () {
             table.render({

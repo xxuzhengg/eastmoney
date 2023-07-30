@@ -85,7 +85,7 @@ public class StockServiceImpl implements StockService {
                     String code = stock.get("f12").asText();
                     String name = stock.get("f14").asText();
                     String type = "1";//沪股
-                    if (code.startsWith("0") || code.startsWith("3")) {
+                    if (code.startsWith("0") || code.startsWith("3") || code.startsWith("2")) {
                         type = "0";//深股
                     }
                     String formatStockKLineApi = String.format(stockKLineApi, fields1, fields2, klt, fqt, type, code, end, lmt);
@@ -103,7 +103,7 @@ public class StockServiceImpl implements StockService {
                     data.setTradingVolumeAvg(tradingVolume.divide(new BigDecimal(kLineTypeMap.get(klt)), 2, RoundingMode.HALF_UP));
                     data.setTradingAmountAvg(tradingAmount.divide(new BigDecimal(kLineTypeMap.get(klt)), 2, RoundingMode.HALF_UP));
                     data.setScore(stockIncrease.subtract(industryIncrease));
-                    data.setLine("<a href='https://quote.eastmoney.com/concept/" + (code.startsWith("60") ? "sh" : "sz") + code + ".html' target='_blank' style='color: red'>查看</a>");
+                    data.setLine("<a href='https://quote.eastmoney.com/concept/" + (type.equals("1") ? "sh" : "sz") + code + ".html' target='_blank' style='color: red'>查看</a>");
                     data.setProfit("<a href='https://www.iwencai.com/unifiedwap/result?w=" + code + "收盘获利' target='_blank' style='color: blue'>查看</a>");
                     dataList.add(data);
                 } catch (Exception e) {
