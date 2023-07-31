@@ -13,12 +13,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 @Service
 public class IndustryServiceImpl implements IndustryService {
@@ -90,36 +88,30 @@ public class IndustryServiceImpl implements IndustryService {
     public List<Data> industryKLine() {
         String industryKLineApi = "https://push2his.eastmoney.com/api/qt/stock/kline/get?fields1=%s&fields2=%s&klt=%s&fqt=%s&secid=90.%s&end=%s&lmt=%s";
         Set<String> industrySet = redisUtil.getKeysByString("*");
-        List<Data> dataList = new CopyOnWriteArrayList<>();
-        CountDownLatch countDownLatch = new CountDownLatch(industrySet.size());
+        Map<String, Map<String, BigDecimal>> map = new ConcurrentHashMap<>();
+        CountDownLatch countDownLatch = new CountDownLatch(industrySet.size() * kLineTypeList.size());
         for (String industryCode : industrySet) {
-            taskExecutor.execute(() -> {
-                try {
-                    List<BigDecimal> increaseList = new ArrayList<>();
-                    for (String klt : kLineTypeList) {
+            for (String klt : kLineTypeList) {
+                taskExecutor.execute(() -> {
+                    try {
                         String formatApi = String.format(industryKLineApi, fields1, fields2, klt, fqt, industryCode, end, lmt);
                         String web = webUtil.getWeb(formatApi);
                         JsonNode jsonNode = objectMapper.readTree(web);
                         BigDecimal increase = new BigDecimal(jsonNode.get("data").get("klines").get(0).asText());
-                        increaseList.add(increase);
+                        if (map.containsKey(industryCode)) {
+                            map.get(industryCode).put(klt, increase);
+                        } else {
+                            map.put(industryCode, new HashMap<>() {{
+                                put(klt, increase);
+                            }});
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        countDownLatch.countDown();
                     }
-                    Data data = new Data();
-                    data.setIndustryCode(industryCode);
-                    data.setIndustryName(redisUtil.getValueByString(industryCode));
-                    data.setLine("<a href='https://quote.eastmoney.com/bk/90." + industryCode + ".html' target='_blank' style='color: red'>查看</a>");
-                    data.setDayIncrease(increaseList.get(0));
-                    data.setWeekIncrease(increaseList.get(1));
-                    data.setMonthIncrease(increaseList.get(2));
-                    data.setQuarterIncrease(increaseList.get(3));
-                    data.setHalfYearIncrease(increaseList.get(4));
-                    data.setYearIncrease(increaseList.get(5));
-                    dataList.add(data);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    countDownLatch.countDown();
-                }
-            });
+                });
+            }
         }
 
         try {
@@ -127,6 +119,20 @@ public class IndustryServiceImpl implements IndustryService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        List<Data> dataList = map.entrySet().stream().map(e -> {
+            Data data = new Data();
+            data.setIndustryCode(e.getKey());
+            data.setIndustryName(redisUtil.getValueByString(e.getKey()));
+            data.setLine("<a href='https://quote.eastmoney.com/bk/90." + e.getKey() + ".html' target='_blank' style='color: red'>查看</a>");
+            data.setDayIncrease(e.getValue().get("101"));
+            data.setWeekIncrease(e.getValue().get("102"));
+            data.setMonthIncrease(e.getValue().get("103"));
+            data.setQuarterIncrease(e.getValue().get("104"));
+            data.setHalfYearIncrease(e.getValue().get("105"));
+            data.setYearIncrease(e.getValue().get("106"));
+            return data;
+        }).collect(Collectors.toList());
 
         return dataList;
     }
