@@ -85,27 +85,30 @@ public class StockServiceImpl implements StockService {
                     String code = stock.get("f12").asText();
                     String name = stock.get("f14").asText();
                     String type = "1";//沪股
-                    if (code.startsWith("0") || code.startsWith("2") || code.startsWith("3") || code.startsWith("8")) {
+                    if (code.startsWith("0") || code.startsWith("2") || code.startsWith("3") || code.startsWith("4") || code.startsWith("8")) {
                         type = "0";//深股
                     }
                     String formatStockKLineApi = String.format(stockKLineApi, fields1, fields2, klt, fqt, type, code, end, lmt);
                     String stockWeb = webUtil.getWeb(formatStockKLineApi);
-                    String str = objectMapper.readTree(stockWeb).get("data").get("klines").get(0).asText();
-                    BigDecimal tradingVolume = new BigDecimal(str.split(",")[0]).divide(new BigDecimal(1_0000));//以万为单位
-                    BigDecimal tradingAmount = new BigDecimal(str.split(",")[1]).divide(new BigDecimal(1_0000_0000));//以亿为单位
-                    BigDecimal stockIncrease = new BigDecimal(str.split(",")[2]);
-                    String formatIndustryKLineApi = String.format(industryKLineApi, fields1, "f59", klt, fqt, industryCode, end, lmt);
-                    String industryWeb = webUtil.getWeb(formatIndustryKLineApi);
-                    BigDecimal industryIncrease = new BigDecimal(objectMapper.readTree(industryWeb).get("data").get("klines").get(0).asText());
-                    Data data = new Data();
-                    data.setStockCode(code);
-                    data.setStockName(name);
-                    data.setTradingVolumeAvg(tradingVolume.divide(new BigDecimal(kLineTypeMap.get(klt)), 2, RoundingMode.HALF_UP));
-                    data.setTradingAmountAvg(tradingAmount.divide(new BigDecimal(kLineTypeMap.get(klt)), 2, RoundingMode.HALF_UP));
-                    data.setScore(stockIncrease.subtract(industryIncrease));
-                    data.setLine("<a href='https://quote.eastmoney.com/concept/" + (type.equals("1") ? "sh" : "sz") + code + ".html' target='_blank' style='color: red'>查看</a>");
-                    data.setProfit("<a href='https://www.iwencai.com/unifiedwap/result?w=" + code + "收盘获利' target='_blank' style='color: blue'>查看</a>");
-                    dataList.add(data);
+                    JsonNode jsonNode = objectMapper.readTree(stockWeb).get("data").get("klines");
+                    if (jsonNode != null && jsonNode.size() > 0) {
+                        String str = jsonNode.get(0).asText();
+                        BigDecimal tradingVolume = new BigDecimal(str.split(",")[0]).divide(new BigDecimal(1_0000));//以万为单位
+                        BigDecimal tradingAmount = new BigDecimal(str.split(",")[1]).divide(new BigDecimal(1_0000_0000));//以亿为单位
+                        BigDecimal stockIncrease = new BigDecimal(str.split(",")[2]);
+                        String formatIndustryKLineApi = String.format(industryKLineApi, fields1, "f59", klt, fqt, industryCode, end, lmt);
+                        String industryWeb = webUtil.getWeb(formatIndustryKLineApi);
+                        BigDecimal industryIncrease = new BigDecimal(objectMapper.readTree(industryWeb).get("data").get("klines").get(0).asText());
+                        Data data = new Data();
+                        data.setStockCode(code);
+                        data.setStockName(name);
+                        data.setTradingVolumeAvg(tradingVolume.divide(new BigDecimal(kLineTypeMap.get(klt)), 2, RoundingMode.HALF_UP));
+                        data.setTradingAmountAvg(tradingAmount.divide(new BigDecimal(kLineTypeMap.get(klt)), 2, RoundingMode.HALF_UP));
+                        data.setScore(stockIncrease.subtract(industryIncrease));
+                        data.setLine("<a href='https://quote.eastmoney.com/concept/" + (type.equals("1") ? "sh" : "sz") + code + ".html' target='_blank' style='color: red'>查看</a>");
+                        data.setProfit("<a href='https://www.iwencai.com/unifiedwap/result?w=" + code + "收盘获利' target='_blank' style='color: blue'>查看</a>");
+                        dataList.add(data);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -123,4 +126,3 @@ public class StockServiceImpl implements StockService {
         return dataList;
     }
 }
-
