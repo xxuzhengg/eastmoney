@@ -5,6 +5,8 @@
 > 下载客户端，然后启动redis-server.exe  
 > https://github.com/tporadowski/redis/tags
 
+> 访问路径 -> http://localhost:8080/spider/index 
+
 > 获取行业对应的股票信息 -> `个股评分` -> 个股涨幅与对应行业涨幅的差值
 
 ### 接口
