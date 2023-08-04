@@ -1,8 +1,8 @@
 ### 说明
 
-> 爬虫抓取的是<a href="https://www.eastmoney.com/" target="_blank">东方财富</a>的数据
+> 爬虫抓取的是<a href="https://www.eastmoney.com/">东方财富</a>的数据
 
-> <a href="https://github.com/tporadowski/redis/tags" target="_blank">下载</a>客户端，然后启动redis-server.exe
+> <a href="https://github.com/tporadowski/redis/tags">下载</a>客户端，然后启动redis-server.exe
 
 > 访问路径 -> http://localhost:8080/spider/index 
 
